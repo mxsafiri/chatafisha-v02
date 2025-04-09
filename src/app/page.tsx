@@ -55,7 +55,7 @@ export default function Home() {
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="w-full min-[400px]:w-auto">
-                    <Link href="/submit-impact">Submit Impact</Link>
+                    <Link href="/submit-project">Submit Project</Link>
                   </Button>
                 </div>
               </motion.div>
