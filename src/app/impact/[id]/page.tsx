@@ -1,164 +1,218 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { mockProjects } from "@/lib/data/mock"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { useEffect, useState } from "react"
 import Image from "next/image"
-import { notFound } from "next/navigation"
-import { formatDate, formatCurrency } from "@/lib/utils"
-import type { ImpactProject } from "@/types"
+import { mockProjects } from "@/lib/data/mock"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ArrowLeft, Users, Trash2, Tree } from "lucide-react"
+import Link from "next/link"
+import type { Project } from "@/types"
 
-function ProjectNotFound() {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <div className="container px-4 py-8 md:px-6">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">Project Not Found</h1>
-            <p className="mt-2 text-muted-foreground">The project you're looking for doesn't exist.</p>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+const fallbackImage = "/images/placeholder.jpg" as const
+
+interface ProjectPageProps {
+  params: {
+    id: string
+  }
 }
 
-function LoadingState() {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <div className="container px-4 py-8 md:px-6">
-          <div className="flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin text-primary" />
+export default function ProjectPage({ params }: ProjectPageProps) {
+  const [project, setProject] = useState<Project | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate API call
+    const fetchProject = async () => {
+      setIsLoading(true)
+      try {
+        const foundProject = mockProjects.find((p) => p.id === params.id)
+        if (foundProject) {
+          setProject(foundProject)
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProject()
+  }, [params.id])
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-[200px]" />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Skeleton className="aspect-video" />
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-[300px]" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
           </div>
         </div>
-      </main>
-    </div>
-  )
-}
-
-export default function ProjectDetailPage({
-  params,
-}: {
-  params: { id: string }
-}) {
-  const project = mockProjects.find((p) => p.id === params.id)
+      </div>
+    )
+  }
 
   if (!project) {
-    return ProjectNotFound()
+    return (
+      <div className="container py-8">
+        <h1 className="text-2xl font-bold">Project not found</h1>
+      </div>
+    )
   }
 
-  const fundingProgress = (project.funding.received / project.funding.target) * 100
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case "verified":
-        return "default"
-      case "pending":
-        return "secondary"
-      case "rejected":
-        return "destructive"
-      default:
-        return "outline"
-    }
-  }
+  const projectImages = project.images.length > 0 ? project.images : [fallbackImage]
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid gap-8 md:grid-cols-2">
-        {/* Project Images */}
+    <div className="container space-y-8 py-8">
+      <div className="flex items-center gap-4">
+        <Link href="/impact">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">{project.title}</h1>
+        <Badge
+          variant={
+            project.status === "verified"
+              ? "success"
+              : project.status === "rejected"
+              ? "destructive"
+              : "default"
+          }
+        >
+          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+        </Badge>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-4">
-          {project.images.map((image, i) => (
-            <div
-              key={i}
-              className="relative aspect-video overflow-hidden rounded-lg"
-            >
-              <Image
-                src={image}
-                alt={`${project.title} image ${i + 1}`}
-                fill
-                className="object-cover"
-              />
+          <div className="overflow-hidden rounded-lg">
+            <Image
+              src={projectImages[0]}
+              alt={project.title}
+              width={800}
+              height={450}
+              className="aspect-video object-cover"
+            />
+          </div>
+          {projectImages.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {projectImages.slice(1).map((image, i) => (
+                <Image
+                  key={i}
+                  src={image}
+                  alt={`${project.title} ${i + 2}`}
+                  width={200}
+                  height={150}
+                  className="aspect-video rounded-lg object-cover"
+                />
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Project Details */}
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">{project.title}</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              {project.description}
-            </p>
-          </div>
-
           <div className="flex items-center gap-4">
-            <Badge variant={getBadgeVariant(project.status)}>
-              {project.status}
-            </Badge>
-            <span className="text-sm text-gray-500">
-              Created: {new Date(project.createdAt).toLocaleDateString()}
-            </span>
+            <Avatar>
+              <AvatarImage src={project.creator.avatar} />
+              <AvatarFallback>
+                {project.creator.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm text-muted-foreground">Created by</p>
+              <p className="font-medium">{project.creator.name}</p>
+            </div>
           </div>
 
-          {/* Creator Info */}
-          <Card className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="relative h-12 w-12 overflow-hidden rounded-full">
-                <Image
-                  src={project.creator.avatar}
-                  alt={project.creator.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="font-semibold">{project.creator.name}</h3>
-                <p className="text-sm text-gray-500">{project.location}</p>
-              </div>
-            </div>
-          </Card>
+          <p className="text-muted-foreground">{project.description}</p>
 
-          {/* Funding Progress */}
-          <Card className="p-4">
-            <h3 className="mb-4 text-lg font-semibold">Funding Progress</h3>
-            <Progress value={fundingProgress} className="mb-2" />
-            <div className="flex justify-between text-sm">
-              <span>
-                Raised: ${project.funding.received.toLocaleString()}
-              </span>
-              <span>Goal: ${project.funding.target.toLocaleString()}</span>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Funding Progress</p>
+            <Progress
+              value={(project.funding.received / project.funding.target) * 100}
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <p>${project.funding.received.toLocaleString()} raised</p>
+              <p>${project.funding.target.toLocaleString()} goal</p>
             </div>
-            <Button className="mt-4 w-full">Support Project</Button>
-          </Card>
+          </div>
 
-          {/* Impact Metrics */}
-          <Card className="p-4">
-            <h3 className="mb-4 text-lg font-semibold">Impact Metrics</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {project.impactMetrics.peopleImpacted.toLocaleString()}
-                </div>
-                <div className="text-sm text-gray-500">People Impacted</div>
+          <Tabs defaultValue="impact" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="impact" className="flex-1">
+                Impact
+              </TabsTrigger>
+              <TabsTrigger value="updates" className="flex-1">
+                Updates
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="impact">
+              <div className="grid gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Users className="h-4 w-4" />
+                      People Impacted
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">
+                      {project.metrics.peopleImpacted.toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Trash2 className="h-4 w-4" />
+                      Waste Collected
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">
+                      {project.metrics.wasteCollected.toLocaleString()} kg
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Tree className="h-4 w-4" />
+                      Trees Planted
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold">
+                      {project.metrics.treesPlanted.toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {project.impactMetrics.wasteCollected.toLocaleString()} kg
-                </div>
-                <div className="text-sm text-gray-500">Waste Collected</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {project.impactMetrics.treesPlanted.toLocaleString()}
-                </div>
-                <div className="text-sm text-gray-500">Trees Planted</div>
-              </div>
-            </div>
-          </Card>
+            </TabsContent>
+            <TabsContent value="updates">
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-center text-sm text-muted-foreground">
+                    No updates yet
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

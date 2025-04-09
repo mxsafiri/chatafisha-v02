@@ -43,10 +43,10 @@ export function UserNav() {
             <Link href="/dashboard">Dashboard</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/profile">Profile</Link>
+            <Link href={`/profile/${user.id}`}>Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings">Settings</Link>
+            <Link href={`/profile/${user.id}?tab=settings`}>Settings</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

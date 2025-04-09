@@ -1,137 +1,105 @@
-import type { User, ImpactProject, SDGGoal } from "@/types"
+import type { User, Project } from "@/types"
 
 export const mockUsers: User[] = [
   {
-    id: "user1",
+    id: "1",
     name: "John Doe",
     email: "john@example.com",
-    avatar: "/images/avatars/john.jpg",
-    role: "user",
+    avatar: "https://avatars.githubusercontent.com/u/1?v=4",
+    bio: "Environmental enthusiast working on sustainable solutions",
     location: "Nairobi, Kenya",
-    bio: "Environmental enthusiast focused on community impact",
-    joinedAt: "2024-01-01",
-  },
-  {
-    id: "user2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    avatar: "/images/avatars/jane.jpg",
-    role: "user",
-    location: "Mombasa, Kenya",
-    bio: "Working on sustainable waste management solutions",
-    joinedAt: "2024-01-15",
-  },
-  {
-    id: "user3",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    avatar: "/images/avatars/alice.jpg",
-    role: "verifier",
-    location: "Kisumu, Kenya",
-    bio: "Environmental impact verification specialist",
-    joinedAt: "2024-02-01",
-  },
+    joinedAt: "2024-01-01T00:00:00Z",
+    metrics: {
+      projectsVerified: 12,
+      peopleImpacted: 5000,
+      wasteCollected: 2500,
+      treesPlanted: 150,
+      totalProjects: 8,
+      fundingReceived: 25000,
+      fundingGiven: 5000
+    },
+    recentActivity: [
+      {
+        id: "1",
+        type: "project_verified",
+        title: "Project Verified",
+        description: "Verified Ocean Cleanup Initiative",
+        date: "2025-04-09T10:00:00Z",
+        projectId: "1"
+      },
+      {
+        id: "2",
+        type: "impact_achieved",
+        title: "Impact Milestone",
+        description: "Reached 5,000 people impacted",
+        date: "2025-04-08T15:00:00Z"
+      },
+      {
+        id: "3",
+        type: "funding_received",
+        title: "Funding Received",
+        description: "Received $10,000 for Community Garden",
+        date: "2025-04-07T09:00:00Z",
+        projectId: "2"
+      }
+    ]
+  }
 ]
 
-export const mockProjects: ImpactProject[] = [
+export const mockProjects: Project[] = [
   {
     id: "1",
     title: "Ocean Cleanup Initiative",
-    description: "Community-led ocean cleanup project targeting plastic pollution",
-    location: "Mombasa, Kenya",
+    description: "A project aimed at cleaning up ocean waste and protecting marine life through community engagement and sustainable practices.",
     status: "verified",
-    createdAt: "2025-03-01T10:00:00Z",
-    updatedAt: "2025-04-01T10:00:00Z",
-    funding: {
-      target: 50000,
-      received: 35000,
-    },
-    impactMetrics: {
-      peopleImpacted: 1500,
-      wasteCollected: 5000,
-      treesPlanted: 0,
-    },
-    category: "waste-management",
-    sdgGoals: [14, 15],
-    images: ["/images/projects/ocean-cleanup.jpg"],
     creator: {
-      id: "user1",
+      id: "1",
       name: "John Doe",
-      avatar: "/images/avatars/john.jpg",
+      avatar: "https://avatars.githubusercontent.com/u/1?v=4"
     },
+    location: "Mombasa, Kenya",
+    images: [
+      "https://images.unsplash.com/photo-1621451537084-482c73073a0f",
+      "https://images.unsplash.com/photo-1621451537084-482c73073a0f"
+    ],
+    funding: {
+      received: 15000,
+      target: 30000
+    },
+    metrics: {
+      peopleImpacted: 1000,
+      wasteCollected: 500,
+      treesPlanted: 50
+    },
+    createdAt: "2025-03-01T00:00:00Z",
+    updatedAt: "2025-04-09T10:00:00Z"
   },
   {
     id: "2",
-    title: "Community Garden Project",
-    description: "Urban farming initiative to promote sustainable food production",
+    title: "Community Garden",
+    description: "Creating sustainable food sources through community gardens in urban areas.",
+    status: "pending",
+    creator: {
+      id: "1",
+      name: "John Doe",
+      avatar: "https://avatars.githubusercontent.com/u/1?v=4"
+    },
     location: "Nairobi, Kenya",
-    status: "pending",
-    createdAt: "2025-03-15T10:00:00Z",
-    updatedAt: "2025-03-15T10:00:00Z",
+    images: [
+      "https://images.unsplash.com/photo-1621451537084-482c73073a0f"
+    ],
     funding: {
-      target: 25000,
-      received: 18750,
+      received: 7500,
+      target: 10000
     },
-    impactMetrics: {
-      peopleImpacted: 500,
-      wasteCollected: 0,
-      treesPlanted: 200,
+    metrics: {
+      peopleImpacted: 250,
+      wasteCollected: 100,
+      treesPlanted: 25
     },
-    category: "agriculture",
-    sdgGoals: [2, 11],
-    images: ["/images/projects/community-garden.jpg"],
-    creator: {
-      id: "user2",
-      name: "Jane Smith",
-      avatar: "/images/avatars/jane.jpg",
-    },
-  },
-  {
-    id: "3",
-    title: "Waste Management System",
-    description: "Implementing a sustainable waste management system",
-    location: "Kisumu, Kenya",
-    status: "pending",
-    createdAt: "2025-03-20T10:00:00Z",
-    updatedAt: "2025-03-20T10:00:00Z",
-    funding: {
-      target: 75000,
-      received: 25000,
-    },
-    impactMetrics: {
-      peopleImpacted: 2500,
-      wasteCollected: 10000,
-      treesPlanted: 0,
-    },
-    category: "waste-management",
-    sdgGoals: [11, 12],
-    images: ["/images/projects/waste-management.jpg"],
-    creator: {
-      id: "user3",
-      name: "Alice Johnson",
-      avatar: "/images/avatars/alice.jpg",
-    },
-  },
-]
-
-export const sdgGoals: SDGGoal[] = [
-  { id: 1, name: "No Poverty", description: "End poverty in all its forms everywhere", icon: "🏠" },
-  { id: 2, name: "Zero Hunger", description: "End hunger, achieve food security", icon: "🌾" },
-  { id: 3, name: "Good Health and Well-being", description: "Ensure healthy lives", icon: "🏥" },
-  { id: 4, name: "Quality Education", description: "Ensure inclusive education", icon: "📚" },
-  { id: 5, name: "Gender Equality", description: "Achieve gender equality", icon: "⚖️" },
-  { id: 6, name: "Clean Water and Sanitation", description: "Clean water for all", icon: "💧" },
-  { id: 7, name: "Affordable and Clean Energy", description: "Access to energy", icon: "⚡" },
-  { id: 8, name: "Decent Work and Economic Growth", description: "Sustainable economic growth", icon: "💼" },
-  { id: 9, name: "Industry, Innovation and Infrastructure", description: "Build infrastructure", icon: "🏭" },
-  { id: 10, name: "Reduced Inequality", description: "Reduce inequality", icon: "🤝" },
-  { id: 11, name: "Sustainable Cities and Communities", description: "Make cities sustainable", icon: "🏘️" },
-  { id: 12, name: "Responsible Consumption and Production", description: "Ensure sustainable consumption", icon: "♻️" },
-  { id: 13, name: "Climate Action", description: "Combat climate change", icon: "🌍" },
-  { id: 14, name: "Life Below Water", description: "Conserve oceans", icon: "🌊" },
-  { id: 15, name: "Life on Land", description: "Protect ecosystems", icon: "🌳" },
-  { id: 16, name: "Peace and Justice Strong Institutions", description: "Promote peaceful societies", icon: "⚖️" },
-  { id: 17, name: "Partnerships to achieve the Goal", description: "Strengthen partnerships", icon: "🤝" },
+    createdAt: "2025-04-01T00:00:00Z",
+    updatedAt: "2025-04-09T09:30:00Z"
+  }
 ]
 
 export const mockNotifications = [

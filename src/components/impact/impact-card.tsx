@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { ArrowRight, MapPin, Users } from "lucide-react"
@@ -36,15 +37,16 @@ export function ImpactCard({ project, view }: ImpactCardProps) {
           "border-b p-0",
           view === "list" && "w-64 shrink-0"
         )}>
-          {project.media[0] && (
+          {project.images[0] && (
             <div className={cn(
-              "overflow-hidden",
+              "relative overflow-hidden",
               view === "grid" ? "aspect-video" : "h-full"
             )}>
-              <img
-                src={project.media[0].url}
+              <Image
+                src={project.images[0]}
                 alt={project.title}
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                fill
+                className="object-cover transition-transform group-hover:scale-105"
               />
             </div>
           )}

@@ -1,148 +1,172 @@
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { sdgGoals } from "@/lib/data/mock"
-import { Filter } from "lucide-react"
+"use client"
+
 import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import type { SDGGoal } from "@/types"
+import { Filter } from "lucide-react"
+
+const impactAreas = [
+  { id: "waste", label: "Waste Management", icon: "♻️" },
+  { id: "water", label: "Clean Water", icon: "💧" },
+  { id: "energy", label: "Clean Energy", icon: "⚡" },
+  { id: "food", label: "Food Security", icon: "🌾" },
+  { id: "education", label: "Education", icon: "📚" },
+  { id: "health", label: "Healthcare", icon: "🏥" },
+  { id: "climate", label: "Climate Action", icon: "🌍" },
+  { id: "biodiversity", label: "Biodiversity", icon: "🌳" }
+]
 
 interface FilterDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onFilterChange: (filters: FilterState) => void
 }
 
 interface FilterState {
-  sdgGoals: number[]
-  impactType: string[]
-  status: string[]
+  status: string
+  impactAreas: string[]
+  sortBy: string
 }
 
-export function FilterDialog({ onFilterChange }: FilterDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [filters, setFilters] = useState<FilterState>({
-    sdgGoals: [],
-    impactType: [],
-    status: [],
-  })
+export function FilterDialog({
+  open,
+  onOpenChange,
+  onFilterChange,
+}: FilterDialogProps) {
+  const [status, setStatus] = useState<string>("all")
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([])
+  const [sortBy, setSortBy] = useState<string>("recent")
 
-  const handleSdgToggle = (value: string[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      sdgGoals: value.map((v) => parseInt(v)),
-    }))
-  }
-
-  const handleImpactTypeToggle = (value: string[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      impactType: value,
-    }))
-  }
-
-  const handleStatusToggle = (value: string[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      status: value,
-    }))
-  }
-
-  const handleApply = () => {
-    onFilterChange(filters)
-    setOpen(false)
-  }
-
-  const handleReset = () => {
-    setFilters({
-      sdgGoals: [],
-      impactType: [],
-      status: [],
-    })
+  const handleApplyFilters = () => {
     onFilterChange({
-      sdgGoals: [],
-      impactType: [],
-      status: [],
+      status,
+      impactAreas: selectedAreas,
+      sortBy,
     })
+    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Filter
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Filter Projects</DialogTitle>
-          <DialogDescription>
-            Filter projects by SDG goals, impact type, and status
-          </DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filter Projects
+          </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <h4 className="font-medium">SDG Goals</h4>
+        <div className="grid gap-6">
+          <div className="space-y-4">
+            <Label>Project Status</Label>
+            <RadioGroup
+              defaultValue={status}
+              onValueChange={setStatus}
+              className="grid grid-cols-3 gap-4"
+            >
+              <div>
+                <RadioGroupItem
+                  value="all"
+                  id="all"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="all"
+                  className="flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary"
+                >
+                  All
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="active"
+                  id="active"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="active"
+                  className="flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary"
+                >
+                  Active
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="completed"
+                  id="completed"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="completed"
+                  className="flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary"
+                >
+                  Completed
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-4">
+            <Label>Impact Areas</Label>
             <ToggleGroup
               type="multiple"
-              value={filters.sdgGoals.map(String)}
-              onValueChange={handleSdgToggle}
-              className="grid grid-cols-3 gap-2"
+              value={selectedAreas}
+              onValueChange={setSelectedAreas}
+              className="grid grid-cols-2 gap-2"
             >
-              {sdgGoals.map((goal: SDGGoal) => (
+              {impactAreas.map((area) => (
                 <ToggleGroupItem
-                  key={goal.id}
-                  value={goal.id.toString()}
-                  aria-label={goal.name}
-                  className="flex h-10 w-full items-center justify-center gap-2 text-xs"
+                  key={area.id}
+                  value={area.id}
+                  className="flex items-center gap-2 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
                 >
-                  {goal.icon} {goal.name}
+                  <span>{area.icon}</span>
+                  <span className="text-sm">{area.label}</span>
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
           </div>
-          <div className="space-y-2">
-            <h4 className="font-medium">Impact Type</h4>
-            <ToggleGroup
-              type="multiple"
-              value={filters.impactType}
-              onValueChange={handleImpactTypeToggle}
-              className="grid grid-cols-2 gap-2"
+
+          <div className="space-y-4">
+            <Label>Sort By</Label>
+            <RadioGroup
+              defaultValue={sortBy}
+              onValueChange={setSortBy}
+              className="grid grid-cols-2 gap-4"
             >
-              <ToggleGroupItem value="waste-management">
-                Waste Management
-              </ToggleGroupItem>
-              <ToggleGroupItem value="agriculture">Agriculture</ToggleGroupItem>
-              <ToggleGroupItem value="water">Water</ToggleGroupItem>
-              <ToggleGroupItem value="energy">Energy</ToggleGroupItem>
-            </ToggleGroup>
+              <div>
+                <RadioGroupItem
+                  value="recent"
+                  id="recent"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="recent"
+                  className="flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary"
+                >
+                  Most Recent
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="impact"
+                  id="impact"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="impact"
+                  className="flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary"
+                >
+                  Most Impact
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
-          <div className="space-y-2">
-            <h4 className="font-medium">Status</h4>
-            <ToggleGroup
-              type="multiple"
-              value={filters.status}
-              onValueChange={handleStatusToggle}
-              className="grid grid-cols-3 gap-2"
-            >
-              <ToggleGroupItem value="pending">Pending</ToggleGroupItem>
-              <ToggleGroupItem value="verified">Verified</ToggleGroupItem>
-              <ToggleGroupItem value="rejected">Rejected</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+
+          <Button onClick={handleApplyFilters}>Apply Filters</Button>
         </div>
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={handleReset}>
-            Reset
-          </Button>
-          <Button onClick={handleApply}>Apply Filters</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

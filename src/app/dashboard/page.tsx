@@ -1,13 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { SiteHeader } from "@/components/layouts/site-header"
-import { DashboardNav } from "@/components/dashboard/dashboard-nav"
 import { Overview } from "@/components/dashboard/overview"
 import { ProjectList } from "@/components/dashboard/project-list"
 import { VerificationQueue } from "@/components/dashboard/verification-queue"
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
+
+function LoadingState() {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Skeleton className="h-[120px]" />
+        <Skeleton className="h-[120px]" />
+        <Skeleton className="h-[120px]" />
+        <Skeleton className="h-[120px]" />
+      </div>
+      <Skeleton className="h-[400px]" />
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   return (
@@ -25,16 +40,24 @@ export default function DashboardPage() {
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
-            <Overview />
+            <Suspense fallback={<LoadingState />}>
+              <Overview />
+            </Suspense>
           </TabsContent>
           <TabsContent value="projects" className="space-y-4">
-            <ProjectList />
+            <Suspense fallback={<LoadingState />}>
+              <ProjectList />
+            </Suspense>
           </TabsContent>
           <TabsContent value="verifications" className="space-y-4">
-            <VerificationQueue />
+            <Suspense fallback={<LoadingState />}>
+              <VerificationQueue />
+            </Suspense>
           </TabsContent>
           <TabsContent value="activity" className="space-y-4">
-            <ActivityFeed />
+            <Suspense fallback={<LoadingState />}>
+              <ActivityFeed />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
