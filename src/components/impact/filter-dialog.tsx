@@ -1,154 +1,148 @@
-"use client"
-
-import { useState } from "react"
-import { Filter, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
-  Button,
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Badge,
-} from "@/components/ui"
+} from "@/components/ui/dialog"
 import { sdgGoals } from "@/lib/data/mock"
+import { Filter } from "lucide-react"
+import { useState } from "react"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import type { SDGGoal } from "@/types"
 
 interface FilterDialogProps {
-  selectedImpactType: string | null
-  selectedSdgGoals: number[]
-  selectedStatus: string | null
-  onFilterChange: (filters: {
-    impactType?: string | null
-    sdgGoals?: number[]
-    status?: string | null
-  }) => void
+  onFilterChange: (filters: FilterState) => void
 }
 
-export function FilterDialog({
-  selectedImpactType,
-  selectedSdgGoals,
-  selectedStatus,
-  onFilterChange,
-}: FilterDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [localImpactType, setLocalImpactType] = useState<string | null>(selectedImpactType)
-  const [localSdgGoals, setLocalSdgGoals] = useState<number[]>(selectedSdgGoals)
-  const [localStatus, setLocalStatus] = useState<string | null>(selectedStatus)
+interface FilterState {
+  sdgGoals: number[]
+  impactType: string[]
+  status: string[]
+}
 
-  const handleApplyFilters = () => {
-    onFilterChange({
-      impactType: localImpactType,
-      sdgGoals: localSdgGoals,
-      status: localStatus,
-    })
+export function FilterDialog({ onFilterChange }: FilterDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    sdgGoals: [],
+    impactType: [],
+    status: [],
+  })
+
+  const handleSdgToggle = (value: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      sdgGoals: value.map((v) => parseInt(v)),
+    }))
+  }
+
+  const handleImpactTypeToggle = (value: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      impactType: value,
+    }))
+  }
+
+  const handleStatusToggle = (value: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      status: value,
+    }))
+  }
+
+  const handleApply = () => {
+    onFilterChange(filters)
     setOpen(false)
   }
 
   const handleReset = () => {
-    setLocalImpactType(null)
-    setLocalSdgGoals([])
-    setLocalStatus(null)
-    onFilterChange({
-      impactType: null,
+    setFilters({
       sdgGoals: [],
-      status: null,
+      impactType: [],
+      status: [],
     })
-    setOpen(false)
+    onFilterChange({
+      sdgGoals: [],
+      impactType: [],
+      status: [],
+    })
   }
-
-  const activeFiltersCount =
-    (selectedImpactType ? 1 : 0) +
-    (selectedSdgGoals.length > 0 ? 1 : 0) +
-    (selectedStatus ? 1 : 0)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2">
           <Filter className="h-4 w-4" />
-          Filter Projects
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {activeFiltersCount}
-            </Badge>
-          )}
+          Filter
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Filter Projects</DialogTitle>
+          <DialogDescription>
+            Filter projects by SDG goals, impact type, and status
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Impact Type</label>
-            <Select
-              value={localImpactType || ""}
-              onValueChange={(value) => setLocalImpactType(value || null)}
+          <div className="space-y-2">
+            <h4 className="font-medium">SDG Goals</h4>
+            <ToggleGroup
+              type="multiple"
+              value={filters.sdgGoals.map(String)}
+              onValueChange={handleSdgToggle}
+              className="grid grid-cols-3 gap-2"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select impact type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
-                <SelectItem value="waste-management">Waste Management</SelectItem>
-                <SelectItem value="community-engagement">Community Engagement</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="marine-conservation">Marine Conservation</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">SDG Goals</label>
-            <div className="flex flex-wrap gap-2">
-              {sdgGoals.map((goal) => (
-                <Badge
+              {sdgGoals.map((goal: SDGGoal) => (
+                <ToggleGroupItem
                   key={goal.id}
-                  variant={localSdgGoals.includes(goal.id) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setLocalSdgGoals((prev) =>
-                      prev.includes(goal.id)
-                        ? prev.filter((id) => id !== goal.id)
-                        : [...prev, goal.id]
-                    )
-                  }}
+                  value={goal.id.toString()}
+                  aria-label={goal.name}
+                  className="flex h-10 w-full items-center justify-center gap-2 text-xs"
                 >
-                  {goal.icon} {goal.title}
-                </Badge>
+                  {goal.icon} {goal.name}
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
-
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Status</label>
-            <Select
-              value={localStatus || ""}
-              onValueChange={(value) => setLocalStatus(value || null)}
+          <div className="space-y-2">
+            <h4 className="font-medium">Impact Type</h4>
+            <ToggleGroup
+              type="multiple"
+              value={filters.impactType}
+              onValueChange={handleImpactTypeToggle}
+              className="grid grid-cols-2 gap-2"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
-                <SelectItem value="verified">Verified</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
+              <ToggleGroupItem value="waste-management">
+                Waste Management
+              </ToggleGroupItem>
+              <ToggleGroupItem value="agriculture">Agriculture</ToggleGroupItem>
+              <ToggleGroupItem value="water">Water</ToggleGroupItem>
+              <ToggleGroupItem value="energy">Energy</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium">Status</h4>
+            <ToggleGroup
+              type="multiple"
+              value={filters.status}
+              onValueChange={handleStatusToggle}
+              className="grid grid-cols-3 gap-2"
+            >
+              <ToggleGroupItem value="pending">Pending</ToggleGroupItem>
+              <ToggleGroupItem value="verified">Verified</ToggleGroupItem>
+              <ToggleGroupItem value="rejected">Rejected</ToggleGroupItem>
+            </ToggleGroup>
           </div>
         </div>
-        <div className="flex justify-between">
-          <Button variant="ghost" onClick={handleReset}>
-            <X className="mr-2 h-4 w-4" />
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={handleReset}>
             Reset
           </Button>
-          <Button onClick={handleApplyFilters}>Apply Filters</Button>
-        </div>
+          <Button onClick={handleApply}>Apply Filters</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
