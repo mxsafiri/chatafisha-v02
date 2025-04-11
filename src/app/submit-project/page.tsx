@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { ImpactMetricField } from "@/components/forms/impact-metric-field"
 import {
   Select,
   SelectContent,
@@ -36,11 +37,36 @@ import type { SDGGoal } from "@/types"
 const projectFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(50, "Description must be at least 50 characters"),
-  location: z.string().min(3, "Location is required"),
+  location: z.object({
+    name: z.string().min(3, "Location name is required"),
+    coordinates: z.object({
+      lat: z.number(),
+      lng: z.number()
+    })
+  }),
   impactType: z.array(z.string()).min(1, "Select at least one impact type"),
   sdgGoals: z.array(z.number()).min(1, "Select at least one SDG goal"),
   fundingTarget: z.number().min(100, "Funding target must be at least $100"),
-  media: z.array(z.string()).optional(),
+  impactMetrics: z.array(z.object({
+    metricId: z.string(),
+    value: z.number(),
+    unit: z.string(),
+    timestamp: z.string(),
+    evidence: z.array(z.string()).optional()
+  })).min(1, "At least one impact metric is required"),
+  evidence: z.array(z.object({
+    file: z.string(),
+    type: z.enum(["image", "video", "document"]),
+    caption: z.string().optional(),
+    metadata: z.object({
+      timestamp: z.string(),
+      location: z.object({
+        lat: z.number(),
+        lng: z.number()
+      }).optional()
+    })
+  })).min(1, "At least one piece of evidence is required"),
+  tags: z.array(z.string()).min(1, "Add at least one tag")
 })
 
 type ProjectFormValues = z.infer<typeof projectFormSchema>
@@ -48,7 +74,16 @@ type ProjectFormValues = z.infer<typeof projectFormSchema>
 const defaultValues: Partial<ProjectFormValues> = {
   impactType: [],
   sdgGoals: [],
-  media: [],
+  location: {
+    name: "",
+    coordinates: {
+      lat: 0,
+      lng: 0
+    }
+  },
+  impactMetrics: [],
+  evidence: [],
+  tags: []
 }
 
 export default function SubmitProject() {
@@ -64,17 +99,12 @@ export default function SubmitProject() {
   async function onSubmit(data: ProjectFormValues) {
     try {
       setIsUploading(true)
-      // TODO: Implement actual project submission
+      // TODO: Submit to API
       console.log(data)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
       toast({
-        title: "Project Submitted",
-        description: "Your project has been submitted for review.",
+        title: "Project submitted",
+        description: "Your project has been submitted for verification.",
       })
-      
       router.push("/impact-explorer")
     } catch (error) {
       toast({
@@ -88,38 +118,34 @@ export default function SubmitProject() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="flex-1">
-        <div className="container px-4 py-8 md:px-6">
+      <main className="container py-6 lg:py-10">
+        <div className="flex flex-col space-y-8">
+          <div>
+            <Link
+              href="/impact-explorer"
+              className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
+            >
+              <ArrowLeft className="mr-1 h-3 w-3" />
+              Back to Impact Explorer
+            </Link>
+            <h1 className="mt-2 scroll-m-20 text-4xl font-bold tracking-tight">
+              Submit Impact Project
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Share your environmental impact project for verification and funding.
+            </p>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
+            className="mx-auto w-full max-w-2xl space-y-8"
           >
-            {/* Navigation */}
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/impact-explorer">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Projects
-                </Link>
-              </Button>
-            </div>
-
-            {/* Form Header */}
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Submit a New Project</h1>
-              <p className="mt-2 text-muted-foreground">
-                Share your impact project with the community and connect with potential funders.
-              </p>
-            </div>
-
-            {/* Project Submission Form */}
-            <div className="mx-auto max-w-2xl space-y-8">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="space-y-4">
                   <FormField
                     control={form.control}
                     name="title"
@@ -130,7 +156,7 @@ export default function SubmitProject() {
                           <Input placeholder="Enter project title" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Choose a clear and descriptive title for your project.
+                          Give your project a clear and descriptive title.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -145,13 +171,13 @@ export default function SubmitProject() {
                         <FormLabel>Project Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe your project, its goals, and expected impact..."
-                            className="min-h-[150px]"
+                            placeholder="Describe your project and its impact"
+                            className="min-h-[100px]"
                             {...field}
                           />
                         </FormControl>
                         <FormDescription>
-                          Provide detailed information about your project and how it will create impact.
+                          Explain what your project does and how it helps the environment.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -162,96 +188,86 @@ export default function SubmitProject() {
                     control={form.control}
                     name="location"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Kibera, Nairobi" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Enter the primary location where the project will take place.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                      <div className="space-y-4">
+                        <FormItem>
+                          <FormLabel>Location Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="e.g., Kibera, Nairobi" 
+                              value={field.value.name}
+                              onChange={e => 
+                                field.onChange({ 
+                                  ...field.value, 
+                                  name: e.target.value 
+                                })
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Enter the primary location where the project will take place.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormItem>
+                            <FormLabel>Latitude</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="any"
+                                placeholder="Latitude"
+                                value={field.value.coordinates.lat}
+                                onChange={e => 
+                                  field.onChange({
+                                    ...field.value,
+                                    coordinates: {
+                                      ...field.value.coordinates,
+                                      lat: parseFloat(e.target.value)
+                                    }
+                                  })
+                                }
+                              />
+                            </FormControl>
+                          </FormItem>
+                          <FormItem>
+                            <FormLabel>Longitude</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number"
+                                step="any"
+                                placeholder="Longitude"
+                                value={field.value.coordinates.lng}
+                                onChange={e => 
+                                  field.onChange({
+                                    ...field.value,
+                                    coordinates: {
+                                      ...field.value.coordinates,
+                                      lng: parseFloat(e.target.value)
+                                    }
+                                  })
+                                }
+                              />
+                            </FormControl>
+                          </FormItem>
+                        </div>
+                      </div>
                     )}
                   />
 
                   <FormField
                     control={form.control}
-                    name="impactType"
+                    name="impactMetrics"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Impact Type</FormLabel>
+                        <FormLabel>Impact Metrics</FormLabel>
                         <FormControl>
-                          <Select
-                            onValueChange={(value) => field.onChange([value])}
-                            defaultValue={field.value?.[0]}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select impact type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="waste-management">Waste Management</SelectItem>
-                              <SelectItem value="community-engagement">Community Engagement</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
-                              <SelectItem value="marine-conservation">Marine Conservation</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormDescription>
-                          Choose the primary type of impact your project will create.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sdgGoals"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>SDG Goals</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={(value) => field.onChange([parseInt(value)])}
-                            defaultValue={field.value?.[0]?.toString()}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select SDG goal" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {sdgGoals.map((goal: SDGGoal) => (
-                                <SelectItem key={goal.id} value={goal.id.toString()}>
-                                  {goal.icon} {goal.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormDescription>
-                          Select the UN Sustainable Development Goals your project addresses.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="fundingTarget"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Funding Target (USD)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Enter funding target"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          <ImpactMetricField
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormDescription>
-                          Set a realistic funding goal for your project.
+                          Add metrics to measure your project&apos;s impact.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -259,7 +275,7 @@ export default function SubmitProject() {
                   />
 
                   <div>
-                    <Label htmlFor="media">Project Media</Label>
+                    <Label htmlFor="evidence">Project Evidence</Label>
                     <div className="mt-2">
                       <div className="flex justify-center rounded-lg border border-dashed border-border px-6 py-10">
                         <div className="text-center">
@@ -275,14 +291,29 @@ export default function SubmitProject() {
                                 name="file-upload"
                                 type="file"
                                 className="sr-only"
-                                accept="image/*"
+                                accept="image/*,video/*,.pdf,.doc,.docx"
                                 multiple
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files || [])
+                                  const evidence = files.map((file) => ({
+                                    file: URL.createObjectURL(file),
+                                    type: file.type.startsWith("image/")
+                                      ? "image"
+                                      : file.type.startsWith("video/")
+                                      ? "video"
+                                      : "document",
+                                    metadata: {
+                                      timestamp: new Date().toISOString(),
+                                    },
+                                  }))
+                                  form.setValue("evidence", evidence)
+                                }}
                               />
                             </label>
                             <p className="pl-1">or drag and drop</p>
                           </div>
                           <p className="text-xs leading-5 text-muted-foreground">
-                            PNG, JPG, GIF up to 10MB
+                            Images, videos, or documents up to 10MB
                           </p>
                         </div>
                       </div>
@@ -293,15 +324,15 @@ export default function SubmitProject() {
                     {isUploading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
+                        Uploading...
                       </>
                     ) : (
                       "Submit Project"
                     )}
                   </Button>
-                </form>
-              </Form>
-            </div>
+                </div>
+              </form>
+            </Form>
           </motion.div>
         </div>
       </main>
