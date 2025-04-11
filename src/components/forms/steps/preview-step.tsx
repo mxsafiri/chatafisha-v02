@@ -8,7 +8,7 @@ import {
   Calendar,
   Users,
   Scale,
-  Tree,
+  Trees,
   Clock,
   Tag,
   Building,
@@ -113,7 +113,7 @@ export function PreviewStep() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
-                    <Tree className="h-4 w-4 text-muted-foreground" />
+                    <Trees className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">
                       {formData.metrics.base.treesPlanted}
                     </span>
