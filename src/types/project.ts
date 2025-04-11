@@ -67,3 +67,79 @@ export interface VerificationSubmission {
     duration?: string
   }
 }
+
+export type ProjectType = 
+  | "waste-management"
+  | "tree-planting"
+  | "water-sanitation"
+  | "renewable-energy"
+  | "education"
+  | "community"
+
+export interface ProjectEvidence {
+  id: string
+  type: "image" | "video" | "document"
+  url: string
+  description: string
+  timestamp: string
+  location: Location
+  fileType: string
+  fileSize: number
+  fileName: string
+}
+
+export interface ProjectSubmission {
+  id: string
+  title: string
+  description: string
+  projectType: ProjectType
+  startDate: string
+  endDate?: string
+  isRecurring: boolean
+  recurringInterval?: "daily" | "weekly" | "monthly" | "quarterly" | "yearly"
+  tags: string[]
+  evidence: ProjectEvidence[]
+  location: Location
+  submitter: {
+    id: string
+    name: string
+    organization: string
+    avatar?: string
+    contact: {
+      email: string
+      phone?: string
+      whatsapp?: string
+    }
+    region: string
+    ward: string
+  }
+  metrics: {
+    base: {
+      peopleImpacted: number
+      wasteCollected: number
+      treesPlanted: number
+    }
+    specific: {
+      [key: string]: number | string
+    }
+  }
+  status: "draft" | "submitted" | "in-review" | "approved" | "rejected"
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectMetricField {
+  id: string
+  label: string
+  type: "number" | "text" | "select"
+  unit?: string
+  options?: string[]
+  tooltip?: string
+  icon?: string
+  validation?: {
+    min?: number
+    max?: number
+    required?: boolean
+    pattern?: string
+  }
+}
