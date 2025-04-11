@@ -1,3 +1,4 @@
+import type { ProjectType, ProjectMetricField } from "@/types/project"
 import {
   Trash2,
   Trees,
@@ -5,10 +6,8 @@ import {
   Sun,
   GraduationCap,
   Users,
-  Scale,
   type LucideIcon,
 } from "lucide-react"
-import type { ProjectType } from "@/types/project"
 
 export const projectTypeIcons: Record<ProjectType, LucideIcon> = {
   "waste-management": Trash2,
@@ -19,7 +18,7 @@ export const projectTypeIcons: Record<ProjectType, LucideIcon> = {
   community: Users,
 }
 
-export const projectTypeMetricFields = {
+export const projectTypeMetricFields: Record<ProjectType, ProjectMetricField[]> = {
   "waste-management": [
     {
       id: "wasteType",
@@ -104,10 +103,10 @@ export const projectTypeMetricFields = {
       tooltip: "Total power output capacity",
     },
     {
-      id: "householdsServed",
-      label: "Households Served",
+      id: "beneficiaries",
+      label: "Beneficiaries",
       type: "number",
-      tooltip: "Number of households benefiting",
+      tooltip: "Number of households/businesses benefiting",
     },
   ],
   education: [
@@ -115,20 +114,21 @@ export const projectTypeMetricFields = {
       id: "programType",
       label: "Program Type",
       type: "select",
-      options: ["workshop", "training", "school", "awareness"],
+      options: ["workshop", "training", "seminar", "course"],
       tooltip: "Type of educational program",
     },
     {
-      id: "sessionsDone",
-      label: "Sessions Completed",
+      id: "participants",
+      label: "Participants",
       type: "number",
-      tooltip: "Number of educational sessions conducted",
+      tooltip: "Number of participants",
     },
     {
-      id: "materialsDistributed",
-      label: "Materials Distributed",
+      id: "duration",
+      label: "Duration",
       type: "number",
-      tooltip: "Quantity of educational materials provided",
+      unit: "hours",
+      tooltip: "Total duration of the program",
     },
   ],
   community: [
@@ -136,20 +136,20 @@ export const projectTypeMetricFields = {
       id: "initiativeType",
       label: "Initiative Type",
       type: "select",
-      options: ["health", "skills", "culture", "sports"],
+      options: ["outreach", "support", "development", "advocacy"],
       tooltip: "Type of community initiative",
     },
     {
-      id: "volunteersEngaged",
-      label: "Volunteers Engaged",
+      id: "beneficiaries",
+      label: "Beneficiaries",
       type: "number",
-      tooltip: "Number of volunteers participating",
+      tooltip: "Number of community members benefiting",
     },
     {
-      id: "eventsOrganized",
-      label: "Events Organized",
+      id: "volunteers",
+      label: "Volunteers",
       type: "number",
-      tooltip: "Number of community events held",
+      tooltip: "Number of volunteers involved",
     },
   ],
-} as const
+}

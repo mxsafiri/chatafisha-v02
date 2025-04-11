@@ -128,7 +128,7 @@ export interface ProjectSubmission {
   updatedAt: string
 }
 
-export interface ProjectMetricField {
+export type ProjectMetricField = {
   id: string
   label: string
   type: "number" | "text" | "select"
