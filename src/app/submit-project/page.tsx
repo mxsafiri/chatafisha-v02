@@ -55,6 +55,7 @@ const projectFormSchema = z.object({
     evidence: z.array(z.string()).optional()
   })).min(1, "At least one impact metric is required"),
   evidence: z.array(z.object({
+    id: z.string(),
     file: z.string(),
     type: z.enum(["image", "video", "document"]),
     caption: z.string().optional(),
@@ -63,7 +64,11 @@ const projectFormSchema = z.object({
       location: z.object({
         lat: z.number(),
         lng: z.number()
-      }).optional()
+      }).optional(),
+      fileInfo: z.object({
+        size: z.number(),
+        type: z.string()
+      })
     })
   })).min(1, "At least one piece of evidence is required"),
   tags: z.array(z.string()).min(1, "Add at least one tag")
@@ -296,14 +301,19 @@ export default function SubmitProject() {
                                 onChange={(e) => {
                                   const files = Array.from(e.target.files || [])
                                   const evidence = files.map((file) => ({
+                                    id: crypto.randomUUID(),
                                     file: URL.createObjectURL(file),
                                     type: file.type.startsWith("image/")
                                       ? "image"
                                       : file.type.startsWith("video/")
                                       ? "video"
-                                      : "document",
+                                      : "document" as const,
                                     metadata: {
                                       timestamp: new Date().toISOString(),
+                                      fileInfo: {
+                                        size: file.size,
+                                        type: file.type,
+                                      }
                                     },
                                   }))
                                   form.setValue("evidence", evidence)
