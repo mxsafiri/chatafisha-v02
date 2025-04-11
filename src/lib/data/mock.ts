@@ -203,6 +203,8 @@ export const mockVerifications: VerificationSubmission[] = [
     id: "1",
     projectId: "1",
     verifierId: "1",
+    title: "Community Beach Cleanup Verification",
+    description: "Monthly beach cleanup initiative in Mombasa",
     status: "pending",
     metrics: {
       peopleImpacted: 100,
@@ -225,17 +227,27 @@ export const mockVerifications: VerificationSubmission[] = [
     submittedAt: "2024-03-15T10:00:00Z",
     createdAt: "2024-03-15T10:00:00Z",
     updatedAt: "2024-03-15T10:00:00Z",
+    submittedBy: {
+      id: "1",
+      name: "John Doe",
+      avatar: "/avatars/john.jpg"
+    },
+    location: mockLocations[0],
+    tags: ["beach-cleanup", "waste-management", "community"],
     metadata: {
       peopleInvolved: 25,
       wasteCollected: 500,
       treesPlanted: 20,
-      location: "Mombasa Beach"
+      location: "Mombasa Beach",
+      duration: "4 hours"
     }
   },
   {
     id: "2",
     projectId: "2",
     verifierId: "2",
+    title: "Tree Planting Initiative Verification",
+    description: "Tree planting activity in Karura Forest",
     status: "approved",
     metrics: {
       peopleImpacted: 50,
@@ -258,11 +270,19 @@ export const mockVerifications: VerificationSubmission[] = [
     submittedAt: "2024-03-10T15:30:00Z",
     createdAt: "2024-03-10T15:30:00Z",
     updatedAt: "2024-03-10T15:30:00Z",
+    submittedBy: {
+      id: "2",
+      name: "Jane Smith",
+      avatar: "/avatars/jane.jpg"
+    },
+    location: mockLocations[1],
+    tags: ["tree-planting", "environmental", "community"],
     metadata: {
       peopleInvolved: 15,
       wasteCollected: 0,
       treesPlanted: 10,
-      location: "Karura Forest"
+      location: "Karura Forest",
+      duration: "3 hours"
     }
   }
 ]

@@ -43,6 +43,8 @@ export interface VerificationSubmission {
   id: string
   projectId: string
   verifierId: string
+  title: string
+  description: string
   status: "pending" | "approved" | "rejected"
   feedback?: string
   metrics: ImpactMetric
@@ -50,10 +52,18 @@ export interface VerificationSubmission {
   submittedAt: string
   createdAt: string
   updatedAt: string
+  submittedBy: {
+    id: string
+    name: string
+    avatar: string
+  }
+  location: Location
+  tags: string[]
   metadata?: {
     peopleInvolved?: number
     wasteCollected?: number
     treesPlanted?: number
     location?: string
+    duration?: string
   }
 }
