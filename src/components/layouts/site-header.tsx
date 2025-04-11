@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { MainNav } from "@/components/layouts/main-nav"
+import { MobileNav } from "@/components/layouts/mobile-nav"
 import { ModeToggle } from "@/components/shared/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { UserNav } from "@/components/shared/user-nav"
@@ -16,13 +17,14 @@ export function SiteHeader() {
           </div>
         </Link>
         <MainNav />
+        <MobileNav />
         <div className="ml-auto flex items-center space-x-4">
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" asChild className="hidden md:flex">
             <Link href="/impact-explorer">
               Explore Impact
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="hidden md:flex">
             <Link href="/submit-impact">
               Submit Impact
             </Link>

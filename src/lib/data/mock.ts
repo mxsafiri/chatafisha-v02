@@ -1,4 +1,4 @@
-import type { User, Project } from "@/types"
+import type { User, Project, SDGGoal } from "@/types"
 
 export const mockUsers: User[] = [
   {
@@ -122,3 +122,60 @@ export const mockNotifications = [
     link: "/dashboard/funding/1",
   },
 ]
+
+export const sdgGoals: SDGGoal[] = [
+  {
+    id: 1,
+    name: "No Poverty",
+    description: "End poverty in all its forms everywhere",
+    icon: "🎯"
+  },
+  {
+    id: 2,
+    name: "Zero Hunger",
+    description: "End hunger, achieve food security and improved nutrition",
+    icon: "🌾"
+  },
+  {
+    id: 3,
+    name: "Good Health and Well-being",
+    description: "Ensure healthy lives and promote well-being for all",
+    icon: "❤️"
+  },
+  {
+    id: 6,
+    name: "Clean Water and Sanitation",
+    description: "Ensure availability and sustainable management of water and sanitation",
+    icon: "💧"
+  },
+  {
+    id: 11,
+    name: "Sustainable Cities and Communities",
+    description: "Make cities inclusive, safe, resilient and sustainable",
+    icon: "🏙️"
+  },
+  {
+    id: 12,
+    name: "Responsible Consumption and Production",
+    description: "Ensure sustainable consumption and production patterns",
+    icon: "♻️"
+  },
+  {
+    id: 13,
+    name: "Climate Action",
+    description: "Take urgent action to combat climate change and its impacts",
+    icon: "🌍"
+  },
+  {
+    id: 14,
+    name: "Life Below Water",
+    description: "Conserve and sustainably use the oceans, seas and marine resources",
+    icon: "🌊"
+  },
+  {
+    id: 15,
+    name: "Life on Land",
+    description: "Protect, restore and promote sustainable use of terrestrial ecosystems",
+    icon: "🌳"
+  }
+];

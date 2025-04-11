@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
 import { sdgGoals } from "@/lib/data/mock"
+import type { SDGGoal } from "@/types"
 
 const projectFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -219,9 +220,9 @@ export default function SubmitProject() {
                               <SelectValue placeholder="Select SDG goal" />
                             </SelectTrigger>
                             <SelectContent>
-                              {sdgGoals.map((goal) => (
+                              {sdgGoals.map((goal: SDGGoal) => (
                                 <SelectItem key={goal.id} value={goal.id.toString()}>
-                                  {goal.icon} {goal.title}
+                                  {goal.icon} {goal.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
