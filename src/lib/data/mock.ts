@@ -1,129 +1,93 @@
-import type { User, Project, SDGGoal } from "@/types"
+import type { User, SDGGoal } from "@/types"
+import type { ImpactProject, Creator } from "@/types/project"
+import type { Location } from "@/types"
 
-export const mockUsers: User[] = [
+export const mockLocations: Location[] = [
+  {
+    name: "Kibera, Nairobi",
+    coordinates: {
+      lat: -1.3136,
+      lng: 36.7845
+    }
+  },
+  {
+    name: "Mombasa Beach",
+    coordinates: {
+      lat: -4.0435,
+      lng: 39.6682
+    }
+  },
+  {
+    name: "Kisumu Lake Victoria",
+    coordinates: {
+      lat: -0.0917,
+      lng: 34.7680
+    }
+  }
+]
+
+export const mockUsers = [
   {
     id: "1",
     name: "John Doe",
     email: "john@example.com",
-    avatar: "https://avatars.githubusercontent.com/u/1?v=4",
-    bio: "Environmental enthusiast working on sustainable solutions",
-    location: "Nairobi, Kenya",
-    joinedAt: "2024-01-01T00:00:00Z",
+    avatar: "/avatars/john.jpg",
+    role: "verifier" as const,
+    bio: "Environmental enthusiast and waste management expert",
+    location: mockLocations[0],
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     metrics: {
-      projectsVerified: 12,
-      peopleImpacted: 5000,
-      wasteCollected: 2500,
-      treesPlanted: 150,
-      totalProjects: 8,
-      fundingReceived: 25000,
-      fundingGiven: 5000
+      projectsVerified: 5,
+      peopleImpacted: 250,
+      wasteCollected: 1000,
+      treesPlanted: 50
     },
     recentActivity: [
       {
-        id: "1",
+        id: "a1",
         type: "project_verified",
-        title: "Project Verified",
-        description: "Verified Ocean Cleanup Initiative",
-        date: "2025-04-09T10:00:00Z",
-        projectId: "1"
+        description: "Verified Community Beach Cleanup project",
+        timestamp: "2024-03-15T10:00:00Z"
       },
       {
-        id: "2",
+        id: "a2",
         type: "impact_achieved",
-        title: "Impact Milestone",
-        description: "Reached 5,000 people impacted",
-        date: "2025-04-08T15:00:00Z"
-      },
-      {
-        id: "3",
-        type: "funding_received",
-        title: "Funding Received",
-        description: "Received $10,000 for Community Garden",
-        date: "2025-04-07T09:00:00Z",
-        projectId: "2"
+        description: "Reached 250 people impacted milestone",
+        timestamp: "2024-03-10T15:30:00Z"
       }
-    ]
-  }
-]
-
-export const mockProjects: Project[] = [
-  {
-    id: "1",
-    title: "Ocean Cleanup Initiative",
-    description: "A project aimed at cleaning up ocean waste and protecting marine life through community engagement and sustainable practices.",
-    status: "verified",
-    creator: {
-      id: "1",
-      name: "John Doe",
-      avatar: "https://avatars.githubusercontent.com/u/1?v=4"
-    },
-    location: "Mombasa, Kenya",
-    images: [
-      "https://images.unsplash.com/photo-1621451537084-482c73073a0f",
-      "https://images.unsplash.com/photo-1621451537084-482c73073a0f"
     ],
-    funding: {
-      received: 15000,
-      target: 30000
-    },
+    impactPoints: 1200
+  },
+  {
+    id: "2",
+    name: "Jane Smith",
+    email: "jane@example.com",
+    avatar: "/avatars/jane.jpg",
+    role: "user" as const,
+    bio: "Passionate about sustainable development",
+    location: mockLocations[1],
+    createdAt: "2024-02-01T00:00:00Z",
+    updatedAt: "2024-02-01T00:00:00Z",
     metrics: {
-      peopleImpacted: 1000,
+      projectsVerified: 3,
+      peopleImpacted: 100,
       wasteCollected: 500,
-      treesPlanted: 50
+      treesPlanted: 20
     },
-    createdAt: "2025-03-01T00:00:00Z",
-    updatedAt: "2025-04-09T10:00:00Z"
-  },
-  {
-    id: "2",
-    title: "Community Garden",
-    description: "Creating sustainable food sources through community gardens in urban areas.",
-    status: "pending",
-    creator: {
-      id: "1",
-      name: "John Doe",
-      avatar: "https://avatars.githubusercontent.com/u/1?v=4"
-    },
-    location: "Nairobi, Kenya",
-    images: [
-      "https://images.unsplash.com/photo-1621451537084-482c73073a0f"
+    recentActivity: [
+      {
+        id: "a3",
+        type: "project_created",
+        description: "Created Lake Victoria Cleanup project",
+        timestamp: "2024-03-01T09:00:00Z"
+      }
     ],
-    funding: {
-      received: 7500,
-      target: 10000
-    },
-    metrics: {
-      peopleImpacted: 250,
-      wasteCollected: 100,
-      treesPlanted: 25
-    },
-    createdAt: "2025-04-01T00:00:00Z",
-    updatedAt: "2025-04-09T09:30:00Z"
+    impactPoints: 800
   }
 ]
 
-export const mockNotifications = [
-  {
-    id: "1",
-    type: "verification",
-    title: "Project Verified",
-    message: "Your project 'Kibera Plastic Collection' has been verified",
-    createdAt: "2024-03-01T10:00:00Z",
-    read: false,
-    link: "/dashboard/projects/1",
-  },
-  {
-    id: "2",
-    type: "funding",
-    title: "New Funding Received",
-    message: "Green Future Fund has funded your project with $2,500",
-    createdAt: "2024-02-28T15:30:00Z",
-    read: true,
-    link: "/dashboard/funding/1",
-  },
-]
-
-export const sdgGoals: SDGGoal[] = [
+export const mockSDGGoals: SDGGoal[] = [
   {
     id: 1,
     name: "No Poverty",
@@ -141,41 +105,95 @@ export const sdgGoals: SDGGoal[] = [
     name: "Good Health and Well-being",
     description: "Ensure healthy lives and promote well-being for all",
     icon: "❤️"
-  },
-  {
-    id: 6,
-    name: "Clean Water and Sanitation",
-    description: "Ensure availability and sustainable management of water and sanitation",
-    icon: "💧"
-  },
-  {
-    id: 11,
-    name: "Sustainable Cities and Communities",
-    description: "Make cities inclusive, safe, resilient and sustainable",
-    icon: "🏙️"
-  },
-  {
-    id: 12,
-    name: "Responsible Consumption and Production",
-    description: "Ensure sustainable consumption and production patterns",
-    icon: "♻️"
-  },
-  {
-    id: 13,
-    name: "Climate Action",
-    description: "Take urgent action to combat climate change and its impacts",
-    icon: "🌍"
-  },
-  {
-    id: 14,
-    name: "Life Below Water",
-    description: "Conserve and sustainably use the oceans, seas and marine resources",
-    icon: "🌊"
-  },
-  {
-    id: 15,
-    name: "Life on Land",
-    description: "Protect, restore and promote sustainable use of terrestrial ecosystems",
-    icon: "🌳"
   }
-];
+]
+
+export const mockCreators: Creator[] = [
+  {
+    id: "1",
+    name: "John Doe",
+    avatar: "/avatars/john.jpg",
+    organization: "Ocean Guardians"
+  },
+  {
+    id: "2",
+    name: "Jane Smith",
+    avatar: "/avatars/jane.jpg",
+    organization: "Green Cities Kenya"
+  }
+]
+
+export const mockProjects: ImpactProject[] = [
+  {
+    id: "1",
+    title: "Community Beach Cleanup",
+    description: "Monthly beach cleanup initiative in Mombasa",
+    type: "waste-management",
+    category: "Community",
+    status: "verified",
+    location: mockLocations[1],
+    impactMetrics: {
+      peopleImpacted: 500,
+      wasteCollected: 2000,
+      treesPlanted: 0
+    },
+    sdgGoals: [11, 13, 14],
+    funding: {
+      target: 5000,
+      received: 3500
+    },
+    createdAt: "2024-01-15T00:00:00Z",
+    updatedAt: "2024-01-15T00:00:00Z",
+    images: ["/projects/beach-cleanup.jpg"],
+    evidence: [],
+    creator: mockCreators[0]
+  },
+  {
+    id: "2",
+    title: "Urban Tree Planting",
+    description: "Reforestation project in Kibera",
+    type: "environmental",
+    category: "Conservation",
+    status: "pending",
+    location: mockLocations[0],
+    impactMetrics: {
+      peopleImpacted: 1000,
+      wasteCollected: 0,
+      treesPlanted: 500
+    },
+    sdgGoals: [11, 13, 15],
+    funding: {
+      target: 10000,
+      received: 2500
+    },
+    createdAt: "2024-02-01T00:00:00Z",
+    updatedAt: "2024-02-01T00:00:00Z",
+    images: ["/projects/tree-planting.jpg"],
+    evidence: [],
+    creator: mockCreators[1]
+  },
+  {
+    id: "3",
+    title: "Lake Victoria Cleanup",
+    description: "Water conservation and cleanup project",
+    type: "environmental",
+    category: "Conservation",
+    status: "pending",
+    location: mockLocations[2],
+    impactMetrics: {
+      peopleImpacted: 2000,
+      wasteCollected: 5000,
+      treesPlanted: 0
+    },
+    sdgGoals: [6, 14, 15],
+    funding: {
+      target: 15000,
+      received: 7500
+    },
+    createdAt: "2024-03-01T00:00:00Z",
+    updatedAt: "2024-03-01T00:00:00Z",
+    images: ["/projects/lake-cleanup.jpg"],
+    evidence: [],
+    creator: mockCreators[1]
+  }
+] as const

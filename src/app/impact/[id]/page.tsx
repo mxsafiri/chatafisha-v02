@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ArrowLeft, Users, Trash2, Tree } from "lucide-react"
+import { ArrowLeft, Users, Trash2, Trees } from "lucide-react"
 import Link from "next/link"
-import type { Project } from "@/types"
+import type { ImpactProject } from "@/types/project"
 
 const fallbackImage = "/images/placeholder.jpg" as const
 
@@ -23,7 +23,7 @@ interface ProjectPageProps {
 }
 
 export default function ProjectPage({ params }: ProjectPageProps) {
-  const [project, setProject] = useState<Project | null>(null)
+  const [project, setProject] = useState<ImpactProject | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -84,10 +84,10 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         <Badge
           variant={
             project.status === "verified"
-              ? "success"
+              ? "default"
               : project.status === "rejected"
               ? "destructive"
-              : "default"
+              : "secondary"
           }
         >
           {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
@@ -171,7 +171,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">
-                      {project.metrics.peopleImpacted.toLocaleString()}
+                      {project.impactMetrics.peopleImpacted.toLocaleString()}
                     </p>
                   </CardContent>
                 </Card>
@@ -184,20 +184,20 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">
-                      {project.metrics.wasteCollected.toLocaleString()} kg
+                      {project.impactMetrics.wasteCollected.toLocaleString()} kg
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Tree className="h-4 w-4" />
+                      <Trees className="h-4 w-4" />
                       Trees Planted
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">
-                      {project.metrics.treesPlanted.toLocaleString()}
+                      {project.impactMetrics.treesPlanted.toLocaleString()}
                     </p>
                   </CardContent>
                 </Card>

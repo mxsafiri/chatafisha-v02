@@ -31,64 +31,67 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
-import { sdgGoals } from "@/lib/data/mock"
+import { mockSDGGoals as sdgGoals } from "@/lib/data/mock"
 import type { SDGGoal } from "@/types"
 
 const projectFormSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  description: z.string().min(50, "Description must be at least 50 characters"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  type: z.enum(["waste-management", "environmental", "social", "economic"]),
+  category: z.string().min(1, "Category is required"),
   location: z.object({
-    name: z.string().min(3, "Location name is required"),
+    name: z.string(),
     coordinates: z.object({
       lat: z.number(),
       lng: z.number()
     })
   }),
-  impactType: z.array(z.string()).min(1, "Select at least one impact type"),
   sdgGoals: z.array(z.number()).min(1, "Select at least one SDG goal"),
-  fundingTarget: z.number().min(100, "Funding target must be at least $100"),
-  impactMetrics: z.array(z.object({
-    metricId: z.string(),
-    value: z.number(),
-    unit: z.string(),
-    timestamp: z.string(),
-    evidence: z.array(z.string()).optional()
-  })).min(1, "At least one impact metric is required"),
+  impactMetrics: z.object({
+    peopleImpacted: z.number(),
+    wasteCollected: z.number(),
+    treesPlanted: z.number()
+  }),
+  funding: z.object({
+    target: z.number().min(0),
+    received: z.number().min(0)
+  }),
+  images: z.array(z.string()),
   evidence: z.array(z.object({
     id: z.string(),
     file: z.string(),
     type: z.enum(["image", "video", "document"]),
-    caption: z.string().optional(),
     metadata: z.object({
       timestamp: z.string(),
+      fileInfo: z.object({
+        type: z.string(),
+        size: z.number()
+      }),
       location: z.object({
         lat: z.number(),
         lng: z.number()
-      }).optional(),
-      fileInfo: z.object({
-        size: z.number(),
-        type: z.string()
-      })
-    })
-  })).min(1, "At least one piece of evidence is required"),
-  tags: z.array(z.string()).min(1, "Add at least one tag")
+      }).optional()
+    }),
+    caption: z.string().optional()
+  }))
 })
 
 type ProjectFormValues = z.infer<typeof projectFormSchema>
 
 const defaultValues: Partial<ProjectFormValues> = {
-  impactType: [],
+  type: "waste-management",
   sdgGoals: [],
-  location: {
-    name: "",
-    coordinates: {
-      lat: 0,
-      lng: 0
-    }
+  impactMetrics: {
+    peopleImpacted: 0,
+    wasteCollected: 0,
+    treesPlanted: 0
   },
-  impactMetrics: [],
-  evidence: [],
-  tags: []
+  funding: {
+    target: 0,
+    received: 0
+  },
+  images: [],
+  evidence: []
 }
 
 export default function SubmitProject() {
@@ -120,6 +123,26 @@ export default function SubmitProject() {
     } finally {
       setIsUploading(false)
     }
+  }
+
+  const handleEvidenceUpload = (files: File[]) => {
+    const evidence = files.map(file => ({
+      id: crypto.randomUUID(),
+      file: URL.createObjectURL(file),
+      type: file.type.startsWith("image/") 
+        ? "image" as const 
+        : file.type.startsWith("video/") 
+        ? "video" as const 
+        : "document" as const,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        fileInfo: {
+          type: file.type,
+          size: file.size
+        }
+      }
+    }))
+    form.setValue("evidence", evidence)
   }
 
   return (
@@ -191,6 +214,44 @@ export default function SubmitProject() {
 
                   <FormField
                     control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project Type</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select project type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="waste-management">Waste Management</SelectItem>
+                              <SelectItem value="environmental">Environmental</SelectItem>
+                              <SelectItem value="social">Social</SelectItem>
+                              <SelectItem value="economic">Economic</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter project category" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="location"
                     render={({ field }) => (
                       <div className="space-y-4">
@@ -199,11 +260,11 @@ export default function SubmitProject() {
                           <FormControl>
                             <Input 
                               placeholder="e.g., Kibera, Nairobi" 
-                              value={field.value.name}
-                              onChange={e => 
-                                field.onChange({ 
-                                  ...field.value, 
-                                  name: e.target.value 
+                              value={field.value?.name || ""}
+                              onChange={(e) =>
+                                form.setValue("location", {
+                                  name: e.target.value,
+                                  coordinates: field.value?.coordinates || { lat: 0, lng: 0 }
                                 })
                               }
                             />
@@ -221,13 +282,13 @@ export default function SubmitProject() {
                                 type="number" 
                                 step="any"
                                 placeholder="Latitude"
-                                value={field.value.coordinates.lat}
-                                onChange={e => 
-                                  field.onChange({
-                                    ...field.value,
+                                value={field.value?.coordinates?.lat || ""}
+                                onChange={(e) =>
+                                  form.setValue("location", {
+                                    name: field.value?.name || "",
                                     coordinates: {
-                                      ...field.value.coordinates,
-                                      lat: parseFloat(e.target.value)
+                                      lat: parseFloat(e.target.value) || 0,
+                                      lng: field.value?.coordinates?.lng || 0
                                     }
                                   })
                                 }
@@ -241,13 +302,13 @@ export default function SubmitProject() {
                                 type="number"
                                 step="any"
                                 placeholder="Longitude"
-                                value={field.value.coordinates.lng}
-                                onChange={e => 
-                                  field.onChange({
-                                    ...field.value,
+                                value={field.value?.coordinates?.lng || ""}
+                                onChange={(e) =>
+                                  form.setValue("location", {
+                                    name: field.value?.name || "",
                                     coordinates: {
-                                      ...field.value.coordinates,
-                                      lng: parseFloat(e.target.value)
+                                      lat: field.value?.coordinates?.lat || 0,
+                                      lng: parseFloat(e.target.value) || 0
                                     }
                                   })
                                 }
@@ -271,9 +332,6 @@ export default function SubmitProject() {
                             onChange={field.onChange}
                           />
                         </FormControl>
-                        <FormDescription>
-                          Add metrics to measure your project&apos;s impact.
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -300,23 +358,7 @@ export default function SubmitProject() {
                                 multiple
                                 onChange={(e) => {
                                   const files = Array.from(e.target.files || [])
-                                  const evidence = files.map((file) => ({
-                                    id: crypto.randomUUID(),
-                                    file: URL.createObjectURL(file),
-                                    type: file.type.startsWith("image/")
-                                      ? "image"
-                                      : file.type.startsWith("video/")
-                                      ? "video"
-                                      : "document" as const,
-                                    metadata: {
-                                      timestamp: new Date().toISOString(),
-                                      fileInfo: {
-                                        size: file.size,
-                                        type: file.type,
-                                      }
-                                    },
-                                  }))
-                                  form.setValue("evidence", evidence)
+                                  handleEvidenceUpload(files)
                                 }}
                               />
                             </label>

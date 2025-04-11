@@ -1,113 +1,125 @@
 "use client"
 
+import { MapPin, Mail, Calendar } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Mail, Calendar, Award, Users, Leaf } from "lucide-react"
-import { mockUsers } from "@/lib/data/mock"
-import { notFound } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { formatDate } from "@/lib/utils"
+import type { User } from "@/types"
 
 interface ProfileOverviewProps {
-  userId: string
+  user: User
 }
 
-export function ProfileOverview({ userId }: ProfileOverviewProps) {
-  const user = mockUsers.find(u => u.id === userId)
-
-  if (!user) {
-    notFound()
-  }
-
+export function ProfileOverview({ user }: ProfileOverviewProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-      {/* Bio Section */}
-      <Card className="lg:col-span-5">
-        <CardHeader>
-          <CardTitle>About</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
+    <div className="grid gap-4">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <Avatar className="h-32 w-32">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>{user.name[0]}</AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-2">
                 <h3 className="text-2xl font-semibold">{user.name}</h3>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{user.location}</span>
-                  <span>•</span>
-                  <Mail className="h-4 w-4" />
-                  <span>{user.email}</span>
-                  <span>•</span>
-                  <Calendar className="h-4 w-4" />
-                  <span>Joined {new Date(user.joinedAt).toLocaleDateString()}</span>
+                <Badge variant="outline">{user.role}</Badge>
+              </div>
+              
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{user.location?.name}</span>
+                <span>•</span>
+                <Mail className="h-4 w-4" />
+                <span>{user.email}</span>
+                <span>•</span>
+                <Calendar className="h-4 w-4" />
+                <span>Joined {formatDate(user.createdAt)}</span>
+              </div>
+
+              {user.bio && (
+                <p className="mt-4 text-muted-foreground">{user.bio}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="metrics">
+        <TabsList>
+          <TabsTrigger value="metrics">Impact Metrics</TabsTrigger>
+          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+        </TabsList>
+        <TabsContent value="metrics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Impact Metrics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Projects Verified
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {user.metrics.projectsVerified}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    People Impacted
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {user.metrics.peopleImpacted}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Waste Collected (kg)
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {user.metrics.wasteCollected}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Trees Planted
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {user.metrics.treesPlanted}
+                  </p>
                 </div>
               </div>
-            </div>
-            <p className="text-muted-foreground">{user.bio}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats Section */}
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Impact Stats</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4 text-blue-500" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user.metrics.projectsVerified}
-                </p>
-                <p className="text-sm text-muted-foreground">Projects Verified</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {user.recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-4">
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {activity.description}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-green-500" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user.metrics.peopleImpacted.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">People Impacted</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Leaf className="h-4 w-4 text-yellow-500" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user.metrics.wasteCollected.toLocaleString()} kg
-                </p>
-                <p className="text-sm text-muted-foreground">Waste Collected</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
-      <Card className="lg:col-span-7">
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {user.recentActivity.map((activity, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Badge variant="outline">{activity.type}</Badge>
-                <p className="text-sm">{activity.description}</p>
-                <span className="ml-auto text-sm text-muted-foreground">
-                  {new Date(activity.date).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

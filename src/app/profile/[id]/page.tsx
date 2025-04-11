@@ -39,39 +39,27 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }
 
   return (
-    <div className="container flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Profile</h2>
-      </div>
-
-      <Tabs defaultValue="overview" className="space-y-4">
+    <div className="container mx-auto py-8">
+      <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="impact">Impact</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="verifications">Verifications</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <Suspense fallback={<LoadingState />}>
-            <ProfileOverview userId={params.id} />
+            <ProfileOverview user={user} />
           </Suspense>
         </TabsContent>
-        <TabsContent value="projects" className="space-y-4">
+        <TabsContent value="projects">
           <Suspense fallback={<LoadingState />}>
-            <ProjectList userId={params.id} />
+            {/* TODO: Add ProjectList component */}
           </Suspense>
         </TabsContent>
-        <TabsContent value="impact" className="space-y-4">
+        <TabsContent value="verifications">
           <Suspense fallback={<LoadingState />}>
-            <ImpactMetrics userId={params.id} />
+            {/* TODO: Add VerificationList component */}
           </Suspense>
-        </TabsContent>
-        <TabsContent value="settings" className="space-y-4">
-          <Card>
-            <CardContent>
-              <p>Settings coming soon...</p>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

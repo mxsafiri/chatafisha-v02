@@ -107,10 +107,12 @@ export function ProjectList({ userId }: ProjectListProps) {
                         </h3>
                         <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          <span>{project.location}</span>
+                          <span>{project.location.name}</span>
                           <span>•</span>
                           <Users className="h-4 w-4" />
-                          <span>{project.metrics.peopleImpacted} impacted</span>
+                          <span>{project.impactMetrics.peopleImpacted} impacted</span>
+                          <span>•</span>
+                          <span>{formatDate(project.createdAt)}</span>
                         </div>
                       </div>
                       <Badge 

@@ -98,7 +98,7 @@ export function VerificationQueue() {
                         </h3>
                         <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          <span>{project.location}</span>
+                          <span>{project.location.name}</span>
                           <span>•</span>
                           <Calendar className="h-4 w-4" />
                           <span>{formatDate(project.createdAt)}</span>

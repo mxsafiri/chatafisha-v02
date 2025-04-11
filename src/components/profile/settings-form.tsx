@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -22,18 +23,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/components/ui/use-toast"
 import type { User } from "@/types"
 
 const settingsFormSchema = z.object({
-  name: z.string().min(2).max(50),
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email(),
-  bio: z.string().max(500).optional(),
-  location: z.string().max(100).optional(),
+  bio: z.string().optional(),
+  location: z.object({
+    name: z.string(),
+    coordinates: z.object({
+      lat: z.number(),
+      lng: z.number()
+    })
+  }).optional(),
   theme: z.enum(["light", "dark", "system"]),
   emailNotifications: z.boolean(),
-  language: z.string(),
-  currency: z.string(),
+  language: z.string()
 })
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
@@ -43,28 +49,31 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ user }: SettingsFormProps) {
+  const { toast } = useToast()
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
       name: user.name,
       email: user.email,
       bio: user.bio || "",
-      location: user.location || "",
+      location: user.location,
       theme: user.settings?.theme || "system",
       emailNotifications: user.settings?.emailNotifications || false,
-      language: user.settings?.language || "en",
-      currency: user.settings?.currency || "USD",
-    },
+      language: user.settings?.language || "en"
+    }
   })
 
   function onSubmit(data: SettingsFormValues) {
-    // TODO: Implement settings update
+    toast({
+      title: "Settings updated",
+      description: "Your profile settings have been updated."
+    })
     console.log(data)
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -103,7 +112,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 <Textarea {...field} />
               </FormControl>
               <FormDescription>
-                Tell others about yourself and your impact goals.
+                Tell us a bit about yourself
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -117,7 +126,48 @@ export function SettingsForm({ user }: SettingsFormProps) {
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <div className="grid gap-2">
+                  <Input
+                    placeholder="Location name"
+                    value={field.value?.name || ""}
+                    onChange={(e) =>
+                      form.setValue("location", {
+                        name: e.target.value,
+                        coordinates: field.value?.coordinates || { lat: 0, lng: 0 }
+                      })
+                    }
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Latitude"
+                      value={field.value?.coordinates?.lat || ""}
+                      onChange={(e) =>
+                        form.setValue("location", {
+                          name: field.value?.name || "",
+                          coordinates: {
+                            lat: parseFloat(e.target.value) || 0,
+                            lng: field.value?.coordinates?.lng || 0
+                          }
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Longitude"
+                      value={field.value?.coordinates?.lng || ""}
+                      onChange={(e) =>
+                        form.setValue("location", {
+                          name: field.value?.name || "",
+                          coordinates: {
+                            lat: field.value?.coordinates?.lat || 0,
+                            lng: parseFloat(e.target.value) || 0
+                          }
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -130,18 +180,40 @@ export function SettingsForm({ user }: SettingsFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Theme</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
+              <FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a theme" />
                   </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="language"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Language</FormLabel>
+              <FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="sw">Swahili</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -153,11 +225,9 @@ export function SettingsForm({ user }: SettingsFormProps) {
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Email Notifications
-                </FormLabel>
+                <FormLabel>Email Notifications</FormLabel>
                 <FormDescription>
-                  Receive email notifications about your projects and impact.
+                  Receive email notifications about your account activity.
                 </FormDescription>
               </div>
               <FormControl>
@@ -170,53 +240,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="language"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Language</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a language" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="currency"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Currency</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a currency" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit">Save changes</Button>
+        <Button type="submit">Save Changes</Button>
       </form>
     </Form>
   )

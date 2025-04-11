@@ -1,10 +1,9 @@
 "use client"
 
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { MapPin, Calendar } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { formatDate } from "@/lib/utils"
 import type { User } from "@/types"
 
 interface ProfileHeaderProps {
@@ -13,46 +12,25 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
   return (
-    <Card className="p-6">
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-background">
-          <Image
-            src={user.avatar}
-            alt={user.name}
-            fill
-            className="object-cover"
-          />
-        </div>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="text-3xl font-bold">{user.name}</h1>
-            <Badge variant="outline">{user.role}</Badge>
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex flex-col items-center space-y-4">
+          <Avatar className="h-32 w-32">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback>{user.name[0]}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1 text-center">
+            <h2 className="text-2xl font-bold">{user.name}</h2>
+            <p className="text-sm text-muted-foreground">
+              Member since {formatDate(user.createdAt)}
+            </p>
           </div>
-          
-          <div className="flex items-center gap-6 text-muted-foreground mb-4">
-            {user.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>{user.location}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Joined {new Date(user.joinedAt).toLocaleDateString()}</span>
-            </div>
+          <div className="flex gap-4">
+            <Button variant="outline">Edit Profile</Button>
+            <Button>Share Profile</Button>
           </div>
-          
-          {user.bio && (
-            <p className="text-muted-foreground max-w-2xl">{user.bio}</p>
-          )}
         </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline">Share Profile</Button>
-          <Button>Edit Profile</Button>
-        </div>
-      </div>
+      </CardContent>
     </Card>
   )
 }
