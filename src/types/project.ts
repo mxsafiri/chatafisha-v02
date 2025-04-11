@@ -47,6 +47,13 @@ export interface VerificationSubmission {
   feedback?: string
   metrics: ImpactMetric
   evidence: VerificationEvidence[]
+  submittedAt: string
   createdAt: string
   updatedAt: string
+  metadata?: {
+    peopleInvolved?: number
+    wasteCollected?: number
+    treesPlanted?: number
+    location?: string
+  }
 }

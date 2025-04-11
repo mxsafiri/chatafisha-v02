@@ -25,20 +25,11 @@ export interface Location {
 
 export interface VerificationEvidence {
   id: string
-  file: string
-  type: "image" | "video" | "document"
-  metadata: {
-    timestamp: string
-    fileInfo: {
-      type: string
-      size: number
-    }
-    location?: {
-      lat: number
-      lng: number
-    }
-  }
-  caption?: string
+  type: "image" | "document" | "video"
+  url: string
+  description: string
+  timestamp: string
+  location: Location
 }
 
 export interface Funding {

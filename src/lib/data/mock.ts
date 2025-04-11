@@ -1,5 +1,5 @@
 import type { User, SDGGoal } from "@/types"
-import type { ImpactProject, Creator } from "@/types/project"
+import type { ImpactProject, Creator, VerificationSubmission } from "@/types/project"
 import type { Location } from "@/types"
 
 export const mockLocations: Location[] = [
@@ -197,3 +197,72 @@ export const mockProjects: ImpactProject[] = [
     creator: mockCreators[1]
   }
 ] as const
+
+export const mockVerifications: VerificationSubmission[] = [
+  {
+    id: "1",
+    projectId: "1",
+    verifierId: "1",
+    status: "pending",
+    metrics: {
+      peopleImpacted: 100,
+      wasteCollected: 500,
+      treesPlanted: 20
+    },
+    evidence: [
+      {
+        id: "1",
+        type: "image",
+        url: "/images/evidence1.jpg",
+        description: "Beach cleanup in progress",
+        timestamp: "2024-03-15T10:00:00Z",
+        location: {
+          name: "Mombasa Beach",
+          coordinates: { lat: -4.0435, lng: 39.6682 }
+        }
+      }
+    ],
+    submittedAt: "2024-03-15T10:00:00Z",
+    createdAt: "2024-03-15T10:00:00Z",
+    updatedAt: "2024-03-15T10:00:00Z",
+    metadata: {
+      peopleInvolved: 25,
+      wasteCollected: 500,
+      treesPlanted: 20,
+      location: "Mombasa Beach"
+    }
+  },
+  {
+    id: "2",
+    projectId: "2",
+    verifierId: "2",
+    status: "approved",
+    metrics: {
+      peopleImpacted: 50,
+      wasteCollected: 200,
+      treesPlanted: 10
+    },
+    evidence: [
+      {
+        id: "2",
+        type: "image",
+        url: "/images/evidence2.jpg",
+        description: "Tree planting activity",
+        timestamp: "2024-03-10T15:30:00Z",
+        location: {
+          name: "Karura Forest",
+          coordinates: { lat: -1.2306, lng: 36.8219 }
+        }
+      }
+    ],
+    submittedAt: "2024-03-10T15:30:00Z",
+    createdAt: "2024-03-10T15:30:00Z",
+    updatedAt: "2024-03-10T15:30:00Z",
+    metadata: {
+      peopleInvolved: 15,
+      wasteCollected: 0,
+      treesPlanted: 10,
+      location: "Karura Forest"
+    }
+  }
+]
