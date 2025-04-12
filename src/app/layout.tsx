@@ -19,19 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              :root {
-                --font-inter: ${inter.style.fontFamily};
-                --font-urbanist: ${urbanist.style.fontFamily};
-              }
-            `,
-          }}
-        />
-      </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className={`min-h-screen bg-background font-sans antialiased ${inter.className}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
