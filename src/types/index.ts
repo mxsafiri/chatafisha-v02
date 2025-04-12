@@ -1,4 +1,4 @@
-import type { ImpactProject } from "./project"
+import type { ImpactProject, ImpactMetric, ProjectSubmission } from "./project"
 
 export type UserRole = 'user' | 'admin' | 'verifier';
 
@@ -49,10 +49,8 @@ export interface User {
   location?: Location
   createdAt: string
   updatedAt: string
-  metrics: UserMetrics
-  recentActivity: Activity[]
+  metrics?: UserMetrics
   settings?: UserSettings
-  impactPoints: number
 }
 
 export interface Activity {
@@ -60,6 +58,7 @@ export interface Activity {
   type: string
   description: string
   timestamp: string
+  user: User
 }
 
 export interface SDGGoal {
@@ -67,16 +66,18 @@ export interface SDGGoal {
   name: string
   description: string
   icon: string
+  color: string
 }
 
 export interface Notification {
-  id: string;
-  type: "verification" | "funding" | "message" | "system";
-  title: string;
-  message: string;
-  createdAt: string;
-  read: boolean;
-  link?: string;
+  id: string
+  type: "verification" | "funding" | "message" | "system"
+  title: string
+  message: string
+  createdAt: string
+  read: boolean
+  link?: string
+  user: User
 }
 
-export type { ImpactProject }
+export type { ImpactProject, ImpactMetric, ProjectSubmission }

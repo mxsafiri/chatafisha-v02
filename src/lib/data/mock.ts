@@ -92,19 +92,22 @@ export const mockSDGGoals: SDGGoal[] = [
     id: 1,
     name: "No Poverty",
     description: "End poverty in all its forms everywhere",
-    icon: "🎯"
+    icon: "💰",
+    color: "#E5243B"
   },
   {
     id: 2,
     name: "Zero Hunger",
     description: "End hunger, achieve food security and improved nutrition",
-    icon: "🌾"
+    icon: "🌾",
+    color: "#DDA63A"
   },
   {
     id: 3,
     name: "Good Health and Well-being",
     description: "Ensure healthy lives and promote well-being for all",
-    icon: "❤️"
+    icon: "❤️",
+    color: "#4C9F38"
   }
 ]
 
