@@ -15,6 +15,7 @@ const urbanist = Urbanist({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://impact-verify.netlify.app"),
   title: {
     default: "Chatafisha Impact Portal",
     template: "%s | Chatafisha Impact Portal",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://chatafisha.com",
+    url: "https://impact-verify.netlify.app",
     title: "Chatafisha Impact Portal",
     description: "Connect impact-makers with funders and verifiers for sustainable community projects",
     siteName: "Chatafisha Impact Portal",
@@ -69,6 +70,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head />
       <body className={`${inter.variable} ${urbanist.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
