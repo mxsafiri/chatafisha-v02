@@ -6,14 +6,14 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   preload: true,
-  fallback: ["system-ui", "sans-serif"],
+  variable: "--font-sans",
 })
 
 const urbanist = Urbanist({
   subsets: ["latin"],
   display: "swap",
   preload: true,
-  fallback: ["system-ui", "sans-serif"],
+  variable: "--font-heading",
 })
 
 export default function RootLayout({
@@ -22,19 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              :root {
-                --font-sans: ${inter.style.fontFamily};
-                --font-heading: ${urbanist.style.fontFamily};
-              }
-            `,
-          }}
-        />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${urbanist.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>
       </body>

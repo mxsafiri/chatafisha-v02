@@ -4,9 +4,6 @@
 
 @layer base {
   :root {
-    --font-sans: system-ui, sans-serif;
-    --font-heading: system-ui, sans-serif;
-
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -75,12 +72,10 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: var(--font-sans);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
-    font-family: var(--font-heading);
   }
 
   h1 {

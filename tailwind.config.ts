@@ -1,23 +1,14 @@
 import type { Config } from "tailwindcss"
-import { fontFamily } from "tailwindcss/defaultTheme"
 
 const config: Config = {
   darkMode: ["class"],
   content: [
-    // App directory
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    // Include other directories
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
-    // Include pages if using
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    // Include root layouts
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
+  prefix: "",
   theme: {
     container: {
       center: true,
@@ -28,8 +19,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", ...fontFamily.sans],
-        urbanist: ["var(--font-urbanist)", ...fontFamily.sans],
+        sans: ["var(--font-sans)"],
+        heading: ["var(--font-heading)"],
       },
       colors: {
         border: "hsl(var(--border))",
