@@ -1,6 +1,6 @@
 "use client"
 
-import { useProjectForm } from "./project-form-provider"
+import { useProjectFormContext } from "./project-form-provider"
 import { Button } from "@/components/ui/button"
 
 const formSteps = [
@@ -27,7 +27,7 @@ const formSteps = [
 ] as const
 
 export function ProjectFormNav() {
-  const { step, totalSteps, nextStep, prevStep } = useProjectForm()
+  const { step, totalSteps, nextStep, prevStep } = useProjectFormContext()
   const isFirstStep = step === 1
   const isLastStep = step === totalSteps
 
