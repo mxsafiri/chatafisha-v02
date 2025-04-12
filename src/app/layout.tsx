@@ -7,13 +7,11 @@ import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ 
   subsets: ["latin"],
-  variable: "--font-inter",
   display: "swap",
 })
 
 const urbanist = Urbanist({
   subsets: ["latin"],
-  variable: "--font-urbanist",
   display: "swap",
 })
 
@@ -23,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${urbanist.variable}`}>
-      <body className="min-h-screen bg-background font-sans antialiased">
+    <html lang="en" suppressHydrationWarning className={inter.className}>
+      <body className={`min-h-screen bg-background font-sans antialiased ${urbanist.className}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
