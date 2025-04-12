@@ -1,13 +1,8 @@
 "use client"
 
-import * as React from "react"
-import { PlusCircle, X } from "lucide-react"
 import { useFieldArray, useFormContext } from "react-hook-form"
-import type { ImpactMetric } from "@/types/project"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -15,21 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-
-const defaultUnits = [
-  "people",
-  "kg",
-  "tonnes",
-  "trees",
-  "hectares",
-  "litres",
-  "units",
-  "hours",
-  "days",
-  "kW",
-  "other",
-] as const
+import { Plus, Trash } from "lucide-react"
+import type { ImpactMetric } from "@/types/project"
 
 const metricTypes = [
   { value: "environmental", label: "Environmental" },
@@ -38,135 +20,114 @@ const metricTypes = [
   { value: "other", label: "Other" },
 ] as const
 
-type MetricType = typeof metricTypes[number]["value"]
-type MetricUnit = typeof defaultUnits[number]
+const defaultMetrics = {
+  environmental: [
+    { name: "CO2 Reduction", unit: "kg" },
+    { name: "Waste Diverted", unit: "kg" },
+    { name: "Water Saved", unit: "liters" },
+  ],
+  social: [
+    { name: "People Impacted", unit: "people" },
+    { name: "Jobs Created", unit: "jobs" },
+    { name: "Communities Served", unit: "communities" },
+  ],
+  economic: [
+    { name: "Revenue Generated", unit: "USD" },
+    { name: "Cost Savings", unit: "USD" },
+    { name: "Investment Attracted", unit: "USD" },
+  ],
+}
+
+interface FormValues {
+  impactMetrics: ImpactMetric[]
+}
 
 export function DynamicMetricInput() {
-  const { control, register, setValue, watch } = useFormContext()
-  const { fields, append, remove } = useFieldArray<{ impactMetrics: ImpactMetric[] }>({
+  const { control } = useFormContext<FormValues>()
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "impactMetrics",
   })
 
-  const handleAddMetric = () => {
-    append({
-      id: crypto.randomUUID(),
-      name: "",
-      unit: defaultUnits[0],
-      value: 0,
-      type: "environmental",
-      createdAt: new Date().toISOString(),
-    })
-  }
-
-  const metrics = watch("impactMetrics")
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-base">Impact Metrics</Label>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleAddMetric}
-          className="gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add Metric
-        </Button>
-      </div>
+      {fields.map((field, index) => (
+        <div key={field.id} className="flex items-start gap-4">
+          <div className="flex-1 space-y-4">
+            <Select
+              onValueChange={(value) => {
+                const defaultMetric = defaultMetrics[value as keyof typeof defaultMetrics]?.[0]
+                if (defaultMetric) {
+                  control._formValues.impactMetrics[index] = {
+                    ...control._formValues.impactMetrics[index],
+                    type: value,
+                    name: defaultMetric.name,
+                    unit: defaultMetric.unit,
+                  }
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select metric type" />
+              </SelectTrigger>
+              <SelectContent>
+                {metricTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      <div className="space-y-4">
-        {fields.map((field, index) => (
-          <Card key={field.id}>
-            <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-4">
-                <div className="space-y-2">
-                  <Label>Metric Name</Label>
-                  <Input
-                    {...register(`impactMetrics.${index}.name`)}
-                    placeholder="e.g., Women Trained"
-                  />
-                </div>
+            <Input
+              placeholder="Metric name"
+              {...control.register(`impactMetrics.${index}.name`)}
+            />
 
-                <div className="space-y-2">
-                  <Label>Unit</Label>
-                  <Select
-                    {...register(`impactMetrics.${index}.unit`)}
-                    value={metrics?.[index]?.unit}
-                    onValueChange={(value: MetricUnit) => setValue(`impactMetrics.${index}.unit`, value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {defaultUnits.map((unit) => (
-                        <SelectItem key={unit} value={unit}>
-                          {unit}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="flex gap-4">
+              <Input
+                type="number"
+                placeholder="Value"
+                {...control.register(`impactMetrics.${index}.value`, {
+                  valueAsNumber: true,
+                })}
+              />
+              <Input
+                placeholder="Unit"
+                {...control.register(`impactMetrics.${index}.unit`)}
+              />
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label>Value</Label>
-                  <Input
-                    {...register(`impactMetrics.${index}.value`, { valueAsNumber: true })}
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                  />
-                </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => remove(index)}
+            className="mt-1"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
 
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select
-                    {...register(`impactMetrics.${index}.type`)}
-                    value={metrics?.[index]?.type}
-                    onValueChange={(value: MetricType) => setValue(`impactMetrics.${index}.type`, value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {metricTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-end md:col-span-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                    className="text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {fields.length === 0 && (
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground text-center">
-                No impact metrics added. Click &quot;Add Metric&quot; to start tracking your impact.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-2"
+        onClick={() =>
+          append({
+            id: crypto.randomUUID(),
+            type: "environmental",
+            name: "",
+            value: 0,
+            unit: "",
+          })
+        }
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Add Metric
+      </Button>
     </div>
   )
 }
