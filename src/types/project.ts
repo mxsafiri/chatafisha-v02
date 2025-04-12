@@ -1,4 +1,4 @@
-import type { Location, Funding, VerificationEvidence, File } from "@/types"
+import type { Location, Funding, VerificationEvidence } from "@/types"
 
 export type ImpactMetricType = {
   id: string
@@ -105,7 +105,7 @@ export type DynamicMetric = {
   value: number
   type?: "environmental" | "social" | "economic" | "other"
   evidence?: {
-    file?: File
+    file?: any
     description?: string
   }
 }
@@ -143,6 +143,8 @@ export interface ProjectSubmission {
   id: string
   title: string
   description: string
+  type: "waste-management" | "environmental" | "social" | "economic"
+  category: string
   projectType: string
   startDate: string
   endDate?: string
@@ -156,6 +158,8 @@ export interface ProjectSubmission {
     }
   }
   impactMetrics: ImpactMetric[]
+  sdgGoals: number[]
+  funding: Funding
   evidence: Array<{
     id: string
     type: "image" | "video" | "document"
@@ -176,6 +180,7 @@ export interface ProjectSubmission {
   status: "draft" | "submitted" | "in-review" | "approved" | "rejected"
   createdAt: string
   updatedAt: string
+  images: string[]
   submitter: {
     id: string
     name: string

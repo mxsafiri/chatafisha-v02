@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { mockProjects } from "@/lib/data/mock"
-import type { ImpactProject } from "@/types/project"
+import type { ProjectSubmission } from "@/types/project"
 import { FilterDialog } from "@/components/impact/filter-dialog"
 import { ImpactCard } from "@/components/impact/impact-card"
 
@@ -13,7 +13,7 @@ export default function ImpactExplorer() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [view, setView] = useState<"grid" | "list">("grid")
 
-  const filteredProjects = mockProjects.filter((project: ImpactProject) => {
+  const filteredProjects = mockProjects.filter((project: ProjectSubmission) => {
     const matchesSearch = searchQuery === "" || 
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -55,7 +55,7 @@ export default function ImpactExplorer() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((project: ImpactProject) => (
+        {filteredProjects.map((project: ProjectSubmission) => (
           <ImpactCard key={project.id} project={project} layout={view} />
         ))}
       </div>

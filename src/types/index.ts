@@ -35,6 +35,8 @@ export interface VerificationEvidence {
 export interface Funding {
   target: number
   received: number
+  currency: string
+  type: "grant" | "donation" | "investment"
 }
 
 export interface User {

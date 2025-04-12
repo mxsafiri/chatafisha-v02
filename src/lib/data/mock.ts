@@ -138,53 +138,74 @@ export const mockMetrics: ImpactMetric[] = [
 export const mockProjects: ProjectSubmission[] = [
   {
     id: "1",
-    title: "Community Waste Collection",
-    description: "Weekly waste collection and recycling program in Mombasa",
-    projectType: "waste-management",
-    startDate: "2025-01-01",
+    title: "Community Beach Cleanup",
+    description: "Weekly beach cleanup initiative to remove plastic waste from Mombasa Beach",
+    type: "waste-management",
+    category: "community",
+    projectType: "cleanup",
+    startDate: "2024-03-01T00:00:00Z",
     isRecurring: true,
     recurringInterval: "weekly",
-    location: {
-      name: "Mombasa",
-      coordinates: {
-        lat: -4.0435,
-        lng: 39.6682,
+    location: mockLocations[1],
+    impactMetrics: [
+      {
+        id: "m1",
+        name: "Waste Collected",
+        unit: "kg",
+        value: 500,
+        type: "environmental",
+        verifiedAt: "2024-03-15T10:00:00Z",
+        verifiedBy: "1"
       },
+      {
+        id: "m2",
+        name: "Volunteers Engaged",
+        unit: "people",
+        value: 25,
+        type: "social"
+      }
+    ],
+    sdgGoals: [14, 15, 17], // Life Below Water, Life on Land, Partnerships
+    funding: {
+      target: 5000,
+      received: 3000,
+      currency: "USD",
+      type: "grant"
     },
-    impactMetrics: mockMetrics,
     evidence: [
       {
         id: "e1",
         type: "image",
-        description: "Team collecting waste",
-        url: "/mock/waste-collection.jpg",
-        timestamp: "2025-01-01T10:00:00Z",
-        location: {
-          name: "Mombasa Beach",
-          coordinates: {
-            lat: -4.0435,
-            lng: 39.6682,
-          },
-        },
+        url: "/images/beach-cleanup-1.jpg",
+        description: "Team collecting plastic waste",
+        timestamp: "2024-03-08T09:00:00Z",
+        location: mockLocations[1],
         fileType: "image/jpeg",
         fileSize: 1024000,
-        fileName: "waste-collection.jpg",
-      },
+        fileName: "beach-cleanup-1.jpg"
+      }
+    ],
+    images: [
+      "/images/beach-cleanup-1.jpg",
+      "/images/beach-cleanup-2.jpg"
     ],
     status: "submitted",
-    createdAt: "2025-01-01T00:00:00Z",
-    updatedAt: "2025-01-01T00:00:00Z",
+    createdAt: "2024-03-01T00:00:00Z",
+    updatedAt: "2024-03-15T10:00:00Z",
     submitter: {
-      id: "user1",
-      name: "John Doe",
-      organization: "EcoTeam",
+      id: "2",
+      name: "Jane Smith",
+      organization: "EcoWarriors Kenya",
+      avatar: "/avatars/jane.jpg",
       contact: {
-        email: "john@ecoteam.org",
+        email: "jane@ecowarriors.org",
+        phone: "+254700000000",
+        whatsapp: "+254700000000"
       },
       region: "Coast",
-      ward: "Nyali",
-    },
-  },
+      ward: "Nyali"
+    }
+  }
 ]
 
 export const mockVerifications: any[] = [
