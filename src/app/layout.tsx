@@ -7,11 +7,13 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ 
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 })
 
 const urbanist = Urbanist({
   subsets: ["latin"],
   variable: "--font-urbanist",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -71,7 +73,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${inter.variable} ${urbanist.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${urbanist.variable} font-sans antialiased min-h-screen bg-background`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
