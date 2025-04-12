@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { Inter, Urbanist } from "next/font/google"
-import "./globals.css"
+import "./output.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 
