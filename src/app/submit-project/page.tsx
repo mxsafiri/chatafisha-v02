@@ -2,25 +2,15 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { ArrowLeft, Upload, Loader2 } from "lucide-react"
+import { v4 as uuidv4 } from "uuid"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import type { ProjectSubmission } from "@/types"
 import { SiteHeader } from "@/components/layouts/site-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { ImpactMetricField } from "@/components/forms/impact-metric-field"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Form,
   FormControl,
@@ -32,8 +22,20 @@ import {
 } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
 import { mockSDGGoals as sdgGoals } from "@/lib/data/mock"
-import type { SDGGoal, ProjectSubmission, ImpactMetric } from "@/types"
+import type { SDGGoal, ImpactMetric } from "@/types"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ArrowLeft, Upload, Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import { ImpactMetricField } from "@/components/forms/impact-metric-field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 
 const projectFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -61,9 +63,11 @@ const projectFormSchema = z.object({
   })),
   sdgGoals: z.array(z.number()),
   funding: z.object({
-    amount: z.number(),
+    type: z.enum(["grant", "donation", "investment"]),
     currency: z.string(),
-    type: z.string()
+    amount: z.number(),
+    target: z.number(),
+    received: z.number()
   }),
   evidence: z.array(z.object({
     id: z.string(),
@@ -81,7 +85,7 @@ const projectFormSchema = z.object({
     fileType: z.string(),
     fileSize: z.number(),
     fileName: z.string()
-  })),
+  })).default([]),
   status: z.enum(["draft", "submitted", "in-review", "approved", "rejected"]).default("draft"),
   submitter: z.object({
     id: z.string(),
@@ -100,78 +104,81 @@ const projectFormSchema = z.object({
 
 type ProjectFormValues = z.infer<typeof projectFormSchema>
 
-const defaultValues: Partial<ProjectFormValues> = {
-  type: "waste-management",
-  category: "",
-  projectType: "",
-  startDate: new Date().toISOString().split("T")[0],
-  isRecurring: false,
-  location: {
-    name: "",
-    coordinates: {
-      lat: 0,
-      lng: 0
-    }
-  },
-  impactMetrics: [],
-  sdgGoals: [],
-  funding: {
-    amount: 0,
-    currency: "USD",
-    type: "grant"
-  },
-  evidence: [],
-  status: "draft",
-  submitter: {
-    id: "",
-    name: "",
-    organization: "",
-    contact: {
-      email: ""
-    },
-    region: "",
-    ward: ""
-  }
-}
-
-export default function SubmitProject() {
+export default function SubmitProjectPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectFormSchema),
-    defaultValues
+    mode: "onBlur",
+    resolver: zodResolver(projectFormSchema) as any,
+    defaultValues: {
+      title: "",
+      description: "",
+      type: "waste-management",
+      category: "",
+      projectType: "",
+      startDate: new Date().toISOString(),
+      isRecurring: false,
+      location: {
+        name: "",
+        coordinates: {
+          lat: 0,
+          lng: 0
+        }
+      },
+      impactMetrics: [],
+      sdgGoals: [],
+      funding: {
+        type: "grant",
+        currency: "USD",
+        amount: 0,
+        target: 0,
+        received: 0
+      },
+      evidence: [],
+      status: "draft" as const,
+      submitter: {
+        id: "", // Will be filled from auth
+        name: "",
+        organization: "",
+        contact: {
+          email: "",
+        },
+        region: "",
+        ward: ""
+      }
+    }
   })
 
   async function onSubmit(data: ProjectFormValues) {
     try {
       setIsSubmitting(true)
       
-      // Transform form data to match ProjectSubmission type
+      // Add timestamps and IDs
       const submission: ProjectSubmission = {
         ...data,
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        images: data.evidence.filter(e => e.type === "image").map(e => e.url)
+        images: [] // Will be populated from evidence
       }
 
       // TODO: Submit to API
-      console.log("Submitting project:", submission)
-
+      console.log(submission)
+      
       toast({
-        title: "Project submitted successfully",
-        description: "Your project has been submitted for review."
+        title: "Success",
+        description: "Project submitted successfully",
       })
-
-      router.push("/impact-explorer")
+      
+      router.push("/projects")
     } catch (error) {
-      console.error("Error submitting project:", error)
+      console.error(error)
       toast({
-        title: "Error submitting project",
-        description: "There was an error submitting your project. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to submit project",
+        variant: "destructive",
       })
     } finally {
       setIsSubmitting(false)
@@ -181,24 +188,13 @@ export default function SubmitProject() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-
-      <main className="container py-6 lg:py-10">
-        <div className="flex flex-col gap-8 pb-10">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex flex-col gap-1">
-              <h1 className="text-3xl font-bold tracking-tight">Submit Project</h1>
-              <p className="text-lg text-muted-foreground">
-                Share your impact project with the community
-              </p>
-            </div>
+      <div className="container py-10">
+        <div className="mx-auto max-w-2xl space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Submit Project</h1>
+            <p className="text-muted-foreground">
+              Fill out the form below to submit your project for verification.
+            </p>
           </div>
 
           <Form {...form}>
@@ -224,8 +220,8 @@ export default function SubmitProject() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Describe your project"
+                      <Textarea 
+                        placeholder="Enter project description"
                         {...field}
                       />
                     </FormControl>
@@ -239,23 +235,16 @@ export default function SubmitProject() {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <FormLabel>Project Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select project type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="waste-management">
-                          Waste Management
-                        </SelectItem>
-                        <SelectItem value="environmental">
-                          Environmental
-                        </SelectItem>
+                        <SelectItem value="waste-management">Waste Management</SelectItem>
+                        <SelectItem value="environmental">Environmental</SelectItem>
                         <SelectItem value="social">Social</SelectItem>
                         <SelectItem value="economic">Economic</SelectItem>
                       </SelectContent>
@@ -425,18 +414,16 @@ export default function SubmitProject() {
                 )}
               />
 
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Submit Project
-                </Button>
-              </div>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Submit Project
+              </Button>
             </form>
           </Form>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
