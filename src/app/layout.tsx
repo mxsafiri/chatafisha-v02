@@ -1,4 +1,4 @@
-"use client"
+"use server"
 
 import { Inter, Urbanist } from "next/font/google"
 import "./globals.css"
@@ -21,8 +21,20 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.className}>
-      <body className={`min-h-screen bg-background font-sans antialiased ${urbanist.className}`}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              :root {
+                --font-inter: ${inter.style.fontFamily};
+                --font-urbanist: ${urbanist.style.fontFamily};
+              }
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

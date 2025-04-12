@@ -10,10 +10,12 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-inter);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
+    font-family: var(--font-urbanist);
   }
 
   h1 {
@@ -67,6 +69,8 @@
   --ring: 142.1 76.2% 36.3%;
 
   --radius: 0.75rem;
+  --font-inter: 'Inter', sans-serif;
+  --font-urbanist: 'Urbanist', sans-serif;
 }
 
 .dark {
@@ -97,16 +101,4 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 142.1 70.6% 45.3%;
-}
-
-/* React Day Picker Styles */
-.rdp {
-  --rdp-cell-size: 40px;
-  --rdp-accent-color: hsl(var(--primary));
-  --rdp-background-color: hsl(var(--primary) / 0.1);
-  --rdp-accent-color-dark: hsl(var(--primary));
-  --rdp-background-color-dark: hsl(var(--primary) / 0.2);
-  --rdp-outline: 2px solid var(--rdp-accent-color);
-  --rdp-outline-selected: 3px solid var(--rdp-accent-color);
-  margin: 0;
 }
