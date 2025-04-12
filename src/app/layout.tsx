@@ -71,9 +71,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${urbanist.variable}`}>
       <head />
-      <body className={`${inter.variable} ${urbanist.variable} font-sans antialiased min-h-screen bg-background`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
