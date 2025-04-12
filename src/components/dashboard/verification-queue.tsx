@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { ProjectSubmission } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,19 +13,21 @@ import { formatDate, formatCurrency } from "@/lib/utils"
 import { mockProjects } from "@/lib/data/mock"
 import { cn } from "@/lib/utils"
 
-export function VerificationQueue() {
-  const [filter, setFilter] = useState<"pending" | "reviewed" | "all">("pending")
+interface VerificationQueueProps {
+  filter?: "all" | "in-review" | "approved"
+}
+
+export function VerificationQueue({ filter = "all" }: VerificationQueueProps) {
   const [search, setSearch] = useState("")
 
   const verificationRequests = mockProjects
     .filter(p => filter === "all" ? true : p.status === filter)
-    .filter(p => 
-      search ? 
+    .filter(p =>
+      search ?
         p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase())
       : true
     )
-    .slice(0, 5)
 
   return (
     <Card>
@@ -35,22 +38,22 @@ export function VerificationQueue() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
             <Button
-              variant={filter === "pending" ? "default" : "outline"}
-              onClick={() => setFilter("pending")}
+              variant={filter === "in-review" ? "default" : "outline"}
+              onClick={() => filter = "in-review"}
               size="sm"
             >
-              Pending
+              In Review
             </Button>
             <Button
-              variant={filter === "reviewed" ? "default" : "outline"}
-              onClick={() => setFilter("reviewed")}
+              variant={filter === "approved" ? "default" : "outline"}
+              onClick={() => filter = "approved"}
               size="sm"
             >
-              Reviewed
+              Approved
             </Button>
             <Button
               variant={filter === "all" ? "default" : "outline"}
-              onClick={() => setFilter("all")}
+              onClick={() => filter = "all"}
               size="sm"
             >
               All
@@ -59,7 +62,7 @@ export function VerificationQueue() {
           <div className="relative w-full sm:w-[200px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search projects..."
+              placeholder="Search verification requests..."
               className="pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -70,7 +73,7 @@ export function VerificationQueue() {
         <div className="space-y-4">
           {verificationRequests.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-muted-foreground">No projects to verify</p>
+              <p className="text-muted-foreground">No verification requests found</p>
             </div>
           ) : (
             verificationRequests.map((project) => (
@@ -105,12 +108,13 @@ export function VerificationQueue() {
                         </div>
                       </div>
                       <Badge 
-                        className={cn(
-                          "mt-2 sm:mt-0",
-                          project.status === "pending" && "bg-yellow-500/10 text-yellow-500",
-                          project.status === "verified" && "bg-green-500/10 text-green-500",
-                          project.status === "rejected" && "bg-red-500/10 text-red-500"
-                        )}
+                        className={
+                          project.status === "in-review"
+                            ? "bg-yellow-500/10 text-yellow-500"
+                            : project.status === "approved"
+                            ? "bg-green-500/10 text-green-500"
+                            : "bg-red-500/10 text-red-500"
+                        }
                       >
                         {project.status}
                       </Badge>
