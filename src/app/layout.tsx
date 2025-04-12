@@ -1,5 +1,3 @@
-"use server"
-
 import { Inter, Urbanist } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
