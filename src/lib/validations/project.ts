@@ -9,6 +9,14 @@ const locationSchema = z.object({
   }),
 })
 
+export const dynamicMetricSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required"),
+  unit: z.string().min(1, "Unit is required"),
+  value: z.number().min(0, "Value must be positive"),
+  type: z.enum(["environmental", "social", "economic", "other"]).optional(),
+})
+
 export const projectEvidenceSchema = z.object({
   id: z.string(),
   type: z.enum(["image", "video", "document"]),
@@ -21,49 +29,48 @@ export const projectEvidenceSchema = z.object({
   fileName: z.string(),
 })
 
+export const impactMetricSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required"),
+  unit: z.string().min(1, "Unit is required"),
+  value: z.number().min(0, "Value must be positive"),
+  type: z.enum(["environmental", "social", "economic", "other"]).optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  verifiedAt: z.string().optional(),
+  verifiedBy: z.string().optional(),
+  evidence: z.object({
+    fileUrl: z.string().optional(),
+    description: z.string().optional(),
+  }).optional(),
+})
+
 export const projectSubmissionSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  projectType: z.enum([
-    "waste-management",
-    "tree-planting",
-    "water-sanitation",
-    "renewable-energy",
-    "education",
-    "community",
-  ] as const),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime().optional(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  projectType: z.string(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
   isRecurring: z.boolean(),
-  recurringInterval: z.enum([
-    "daily",
-    "weekly",
-    "monthly",
-    "quarterly",
-    "yearly",
-  ]).optional(),
-  tags: z.array(z.string()).min(1, "At least one tag is required"),
-  evidence: z.array(projectEvidenceSchema).min(1, "At least one evidence item is required"),
+  recurringInterval: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly"]).optional(),
   location: locationSchema,
+  impactMetrics: z.array(impactMetricSchema),
+  evidence: z.array(projectEvidenceSchema),
+  status: z.enum(["draft", "submitted", "in-review", "approved", "rejected"]),
+  createdAt: z.string(),
+  updatedAt: z.string(),
   submitter: z.object({
-    name: z.string().min(1, "Name is required"),
-    organization: z.string().min(1, "Organization is required"),
-    avatar: z.string().url().optional(),
+    id: z.string(),
+    name: z.string(),
+    organization: z.string(),
+    avatar: z.string().optional(),
     contact: z.object({
       email: z.string().email(),
-      phone: z.string().regex(/^\+?[1-9]\d{1,14}$/).optional(),
-      whatsapp: z.string().regex(/^\+?[1-9]\d{1,14}$/).optional(),
+      phone: z.string().optional(),
+      whatsapp: z.string().optional(),
     }),
-    region: z.string().min(1, "Region is required"),
-    ward: z.string().min(1, "Ward is required"),
-  }),
-  metrics: z.object({
-    base: z.object({
-      peopleImpacted: z.number().min(0),
-      wasteCollected: z.number().min(0),
-      treesPlanted: z.number().min(0),
-    }),
-    specific: z.record(z.union([z.string(), z.number()])),
+    region: z.string(),
+    ward: z.string(),
   }),
 })
 

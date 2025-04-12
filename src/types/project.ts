@@ -1,4 +1,4 @@
-import type { Location, Funding, VerificationEvidence } from "@/types"
+import type { Location, Funding, VerificationEvidence, File } from "@/types"
 
 export type ImpactMetricType = {
   id: string
@@ -8,10 +8,20 @@ export type ImpactMetricType = {
   category: "environmental" | "social" | "economic" | "other"
 }
 
-export interface ImpactMetric {
-  peopleImpacted: number
-  wasteCollected: number
-  treesPlanted: number
+export type ImpactMetric = {
+  id: string // For frontend management
+  name: string
+  unit: string
+  value: number
+  type?: "environmental" | "social" | "economic" | "other"
+  createdAt?: string // For tracking when metric was added
+  updatedAt?: string // For tracking updates
+  verifiedAt?: string // For when a verifier approves the metric
+  verifiedBy?: string // ID of the verifier who approved it
+  evidence?: {
+    fileUrl?: string
+    description?: string
+  }
 }
 
 export interface Creator {
@@ -88,8 +98,19 @@ export interface ProjectEvidence {
   fileName: string
 }
 
-export interface ProjectSubmission {
+export type DynamicMetric = {
   id: string
+  name: string
+  unit: string
+  value: number
+  type?: "environmental" | "social" | "economic" | "other"
+  evidence?: {
+    file?: File
+    description?: string
+  }
+}
+
+export interface ProjectSubmissionFormData {
   title: string
   description: string
   projectType: ProjectType
@@ -100,6 +121,9 @@ export interface ProjectSubmission {
   tags: string[]
   evidence: ProjectEvidence[]
   location: Location
+  metrics: {
+    dynamic: DynamicMetric[]
+  }
   submitter: {
     id: string
     name: string
@@ -113,19 +137,58 @@ export interface ProjectSubmission {
     region: string
     ward: string
   }
-  metrics: {
-    base: {
-      peopleImpacted: number
-      wasteCollected: number
-      treesPlanted: number
-    }
-    specific: {
-      [key: string]: number | string
+}
+
+export interface ProjectSubmission {
+  id: string
+  title: string
+  description: string
+  projectType: string
+  startDate: string
+  endDate?: string
+  isRecurring: boolean
+  recurringInterval?: "daily" | "weekly" | "monthly" | "quarterly" | "yearly"
+  location: {
+    name: string
+    coordinates: {
+      lat: number
+      lng: number
     }
   }
+  impactMetrics: ImpactMetric[]
+  evidence: Array<{
+    id: string
+    type: "image" | "video" | "document"
+    description: string
+    url: string
+    timestamp: string
+    location: {
+      name: string
+      coordinates: {
+        lat: number
+        lng: number
+      }
+    }
+    fileType: string
+    fileSize: number
+    fileName: string
+  }>
   status: "draft" | "submitted" | "in-review" | "approved" | "rejected"
   createdAt: string
   updatedAt: string
+  submitter: {
+    id: string
+    name: string
+    organization: string
+    avatar?: string
+    contact: {
+      email: string
+      phone?: string
+      whatsapp?: string
+    }
+    region: string
+    ward: string
+  }
 }
 
 export type ProjectMetricField = {

@@ -1,5 +1,5 @@
 import type { User, SDGGoal } from "@/types"
-import type { ImpactProject, Creator, VerificationSubmission } from "@/types/project"
+import type { ImpactMetric, ProjectSubmission } from "@/types/project"
 import type { Location } from "@/types"
 
 export const mockLocations: Location[] = [
@@ -108,97 +108,86 @@ export const mockSDGGoals: SDGGoal[] = [
   }
 ]
 
-export const mockCreators: Creator[] = [
+export const mockMetrics: ImpactMetric[] = [
   {
-    id: "1",
-    name: "John Doe",
-    avatar: "/avatars/john.jpg",
-    organization: "Ocean Guardians"
+    id: "m1",
+    name: "Waste Collected",
+    unit: "kg",
+    value: 100,
+    type: "environmental",
+    createdAt: "2025-01-01T00:00:00Z",
   },
   {
-    id: "2",
-    name: "Jane Smith",
-    avatar: "/avatars/jane.jpg",
-    organization: "Green Cities Kenya"
-  }
+    id: "m2",
+    name: "People Trained",
+    unit: "people",
+    value: 25,
+    type: "social",
+    createdAt: "2025-01-01T00:00:00Z",
+  },
+  {
+    id: "m3",
+    name: "Trees Planted",
+    unit: "trees",
+    value: 50,
+    type: "environmental",
+    createdAt: "2025-01-01T00:00:00Z",
+  },
 ]
 
-export const mockProjects: ImpactProject[] = [
+export const mockProjects: ProjectSubmission[] = [
   {
     id: "1",
-    title: "Community Beach Cleanup",
-    description: "Monthly beach cleanup initiative in Mombasa",
-    type: "waste-management",
-    category: "Community",
-    status: "verified",
-    location: mockLocations[1],
-    impactMetrics: {
-      peopleImpacted: 500,
-      wasteCollected: 2000,
-      treesPlanted: 0
+    title: "Community Waste Collection",
+    description: "Weekly waste collection and recycling program in Mombasa",
+    projectType: "waste-management",
+    startDate: "2025-01-01",
+    isRecurring: true,
+    recurringInterval: "weekly",
+    location: {
+      name: "Mombasa",
+      coordinates: {
+        lat: -4.0435,
+        lng: 39.6682,
+      },
     },
-    sdgGoals: [11, 13, 14],
-    funding: {
-      target: 5000,
-      received: 3500
+    impactMetrics: mockMetrics,
+    evidence: [
+      {
+        id: "e1",
+        type: "image",
+        description: "Team collecting waste",
+        url: "/mock/waste-collection.jpg",
+        timestamp: "2025-01-01T10:00:00Z",
+        location: {
+          name: "Mombasa Beach",
+          coordinates: {
+            lat: -4.0435,
+            lng: 39.6682,
+          },
+        },
+        fileType: "image/jpeg",
+        fileSize: 1024000,
+        fileName: "waste-collection.jpg",
+      },
+    ],
+    status: "submitted",
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-01T00:00:00Z",
+    submitter: {
+      id: "user1",
+      name: "John Doe",
+      organization: "EcoTeam",
+      contact: {
+        email: "john@ecoteam.org",
+      },
+      region: "Coast",
+      ward: "Nyali",
     },
-    createdAt: "2024-01-15T00:00:00Z",
-    updatedAt: "2024-01-15T00:00:00Z",
-    images: ["/projects/beach-cleanup.jpg"],
-    evidence: [],
-    creator: mockCreators[0]
   },
-  {
-    id: "2",
-    title: "Urban Tree Planting",
-    description: "Reforestation project in Kibera",
-    type: "environmental",
-    category: "Conservation",
-    status: "pending",
-    location: mockLocations[0],
-    impactMetrics: {
-      peopleImpacted: 1000,
-      wasteCollected: 0,
-      treesPlanted: 500
-    },
-    sdgGoals: [11, 13, 15],
-    funding: {
-      target: 10000,
-      received: 2500
-    },
-    createdAt: "2024-02-01T00:00:00Z",
-    updatedAt: "2024-02-01T00:00:00Z",
-    images: ["/projects/tree-planting.jpg"],
-    evidence: [],
-    creator: mockCreators[1]
-  },
-  {
-    id: "3",
-    title: "Lake Victoria Cleanup",
-    description: "Water conservation and cleanup project",
-    type: "environmental",
-    category: "Conservation",
-    status: "pending",
-    location: mockLocations[2],
-    impactMetrics: {
-      peopleImpacted: 2000,
-      wasteCollected: 5000,
-      treesPlanted: 0
-    },
-    sdgGoals: [6, 14, 15],
-    funding: {
-      target: 15000,
-      received: 7500
-    },
-    createdAt: "2024-03-01T00:00:00Z",
-    updatedAt: "2024-03-01T00:00:00Z",
-    images: ["/projects/lake-cleanup.jpg"],
-    evidence: [],
-    creator: mockCreators[1]
-  }
-] as const
+]
 
-export const mockVerifications: VerificationSubmission[] = [
+export const mockVerifications: any[] = [
   {
     id: "1",
     projectId: "1",
