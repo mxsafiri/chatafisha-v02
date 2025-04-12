@@ -1,12 +1,15 @@
 [build]
   command = "npm run build"
   publish = ".next"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ./"
 
 [build.environment]
-  NEXT_PUBLIC_API_URL = "/"
+  NEXT_PUBLIC_APP_URL = "/"
   NODE_VERSION = "20"
   NPM_VERSION = "10"
   NEXT_TELEMETRY_DISABLED = "1"
+  NEXT_PUBLIC_ENABLE_AUTH = "false"
+  NEXT_PUBLIC_ENABLE_ANALYTICS = "false"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -18,8 +21,10 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
