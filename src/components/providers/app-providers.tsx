@@ -1,10 +1,14 @@
 "use client"
 
+import { ReactNode } from "react"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { UserProvider } from "@/components/providers/user-provider"
-import { Toaster } from "@/components/ui/toaster"
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface AppProvidersProps {
+  children: ReactNode
+}
+
+export function AppProviders({ children }: AppProvidersProps) {
   return (
     <ThemeProvider
       attribute="class"
@@ -14,7 +18,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <UserProvider>
         {children}
-        <Toaster />
       </UserProvider>
     </ThemeProvider>
   )

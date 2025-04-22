@@ -1,0 +1,8 @@
+/* Custom styles for the animated globe component */
+.feature-icon {
+  --ring-color: transparent;
+}
+
+.feature-icon.active {
+  ring-color: var(--ring-color);
+}

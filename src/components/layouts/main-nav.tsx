@@ -4,21 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
-
-const mainNavItems = [
-  {
-    title: "Home",
-    href: "/",
-  },
-  {
-    title: "Impact Explorer",
-    href: "/impact-explorer",
-  },
-  {
-    title: "About",
-    href: "/about",
-  },
-]
+import { mainNavItems } from "@/lib/navigation"
 
 export function MainNav() {
   const pathname = usePathname()
