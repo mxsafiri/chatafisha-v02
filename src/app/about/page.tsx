@@ -201,7 +201,7 @@ export default function AboutPage() {
                 >
                   <h3 className="text-xl font-bold mb-4 text-center">See Our Vision in Action</h3>
                   <YouTubeEmbed 
-                    videoId="fGPZZKKG-xk" 
+                    videoId="9aUHubVnmLQ" 
                     title="Chatafisha Explainer Video" 
                   />
                 </motion.div>
