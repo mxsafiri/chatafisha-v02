@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowRight, BarChart3, Shield, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SiteHeader } from "@/components/layouts/site-header"
+import { ImpactVisualization } from "@/components/home/impact-visualization"
 
 const features = [
   {
@@ -63,9 +64,9 @@ export default function Home() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
+                className="mx-auto h-[400px] aspect-square overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
               >
-                <div className="h-full w-full bg-gradient-to-br from-primary/20 via-primary/5 to-background rounded-xl border" />
+                <ImpactVisualization />
               </motion.div>
             </div>
           </div>
