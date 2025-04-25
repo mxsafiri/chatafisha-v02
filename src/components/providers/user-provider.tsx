@@ -6,8 +6,8 @@ import { mockSubmitter } from "@/lib/data/mock-submitter"
 import { mockVerifier } from "@/lib/data/mock-verifier"
 import type { User, UserRole } from "@/types"
 import type { Verifier } from "@/types/verification"
-import { onAuthStateChanged, Auth } from 'firebase/auth'
-import { doc, getDoc, Firestore } from 'firebase/firestore'
+import { onAuthStateChanged, Auth, getIdTokenResult, User as FirebaseUser } from 'firebase/auth'
+import { doc, getDoc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase/config'
 
 // Define user types for the dashboard
@@ -141,12 +141,16 @@ export function UserProvider({
             
             if (userDoc.exists()) {
               const userData = userDoc.data();
+              
+              // Use role directly from Firestore
+              const userRole = userData.role || 'user';
+              
               const firebaseUserData: User = {
                 id: user.uid,
                 name: userData.displayName || user.displayName || '',
                 email: userData.email || user.email || '',
-                role: userData.role || 'user',
-                avatar: userData.avatar || user.photoURL || undefined,
+                role: userRole as UserRole,
+                avatar: userData.avatar || userData.photoURL || user.photoURL || undefined,
                 createdAt: userData.createdAt?.toDate?.() 
                   ? new Date(userData.createdAt.toDate()).toISOString() 
                   : new Date().toISOString(),
@@ -158,25 +162,55 @@ export function UserProvider({
               setFirebaseUser(firebaseUserData);
               
               // Update userType based on Firebase user role
-              if (userData.role === 'submitter' || 
-                  userData.role === 'verifier' || 
-                  userData.role === 'funder' || 
-                  userData.role === 'admin') {
-                setUserType(userData.role as UserType);
+              if (userRole === 'submitter' || 
+                  userRole === 'verifier' || 
+                  userRole === 'funder' || 
+                  userRole === 'admin') {
+                setUserType(userRole as UserType);
               }
+              
+              // Log user role for debugging
+              console.log(`User authenticated with role: ${userRole}`);
             } else {
               // If user document doesn't exist but auth does, create minimal user object
-              setFirebaseUser({
+              console.log("User authenticated but no Firestore document found. Creating basic profile.");
+              
+              const basicUserData = {
                 id: user.uid,
                 name: user.displayName || '',
                 email: user.email || '',
-                role: 'user',
+                role: 'user' as UserRole,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-              } as User);
+              } as User;
+              
+              setFirebaseUser(basicUserData);
+              
+              // Create a new user document in Firestore
+              try {
+                await setDoc(doc(db as Firestore, 'users', user.uid), {
+                  uid: user.uid,
+                  displayName: user.displayName || '',
+                  name: user.displayName || '',
+                  email: user.email || '',
+                  role: 'user',
+                  isSubmitter: false,
+                  isVerifier: false,
+                  isFunder: false,
+                  isAdmin: false,
+                  photoURL: user.photoURL,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
+                
+                console.log("Created basic user profile in Firestore");
+              } catch (error) {
+                console.error('Error creating user document:', error);
+              }
             }
           } else {
             // No user is signed in
+            console.log("No user is signed in");
             setFirebaseUser(null);
           }
         } catch (error) {
