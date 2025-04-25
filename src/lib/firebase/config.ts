@@ -43,15 +43,40 @@ if (isBrowser) {
       // Check if Firebase is already initialized
       if (!getApps().length) {
         app = initializeApp(firebaseConfig);
+        console.log('Firebase app initialized successfully');
       } else {
         app = getApp();
+        console.log('Using existing Firebase app');
       }
       
       // Initialize Firebase services
-      auth = getAuth(app);
-      db = getFirestore(app);
-      storage = getStorage(app);
-      functions = getFunctions(app);
+      try {
+        auth = getAuth(app);
+        console.log('Firebase Auth initialized successfully');
+      } catch (authError) {
+        console.error('Error initializing Firebase Auth:', authError);
+      }
+      
+      try {
+        db = getFirestore(app);
+        console.log('Firestore initialized successfully');
+      } catch (dbError) {
+        console.error('Error initializing Firestore:', dbError);
+      }
+      
+      try {
+        storage = getStorage(app);
+        console.log('Firebase Storage initialized successfully');
+      } catch (storageError) {
+        console.error('Error initializing Firebase Storage:', storageError);
+      }
+      
+      try {
+        functions = getFunctions(app);
+        console.log('Firebase Functions initialized successfully');
+      } catch (functionsError) {
+        console.error('Error initializing Firebase Functions:', functionsError);
+      }
       
       console.log('Firebase initialized successfully');
     } else {
@@ -64,4 +89,51 @@ if (isBrowser) {
   console.warn('Firebase not initialized - running on server');
 }
 
-export { app, auth, db, storage, functions };
+// Helper functions to safely access Firebase services
+const getFirebaseApp = (): FirebaseApp => {
+  if (!app) {
+    throw new Error('Firebase app not initialized');
+  }
+  return app;
+};
+
+const getFirebaseAuth = (): Auth => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized');
+  }
+  return auth;
+};
+
+const getFirebaseFirestore = (): Firestore => {
+  if (!db) {
+    throw new Error('Firestore not initialized');
+  }
+  return db;
+};
+
+const getFirebaseStorage = (): FirebaseStorage => {
+  if (!storage) {
+    throw new Error('Firebase Storage not initialized');
+  }
+  return storage;
+};
+
+const getFirebaseFunctions = (): Functions => {
+  if (!functions) {
+    throw new Error('Firebase Functions not initialized');
+  }
+  return functions;
+};
+
+export { 
+  app, 
+  auth, 
+  db, 
+  storage, 
+  functions,
+  getFirebaseApp,
+  getFirebaseAuth,
+  getFirebaseFirestore,
+  getFirebaseStorage,
+  getFirebaseFunctions
+};

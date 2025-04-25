@@ -6,10 +6,9 @@ import { mockSubmitter } from "@/lib/data/mock-submitter"
 import { mockVerifier } from "@/lib/data/mock-verifier"
 import type { User, UserRole } from "@/types"
 import type { Verifier } from "@/types/verification"
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, Auth } from 'firebase/auth'
 import { doc, getDoc, Firestore } from 'firebase/firestore'
-import { authService } from '@/lib/firebase/services'
-import { db } from '@/lib/firebase/config'
+import { auth, db } from '@/lib/firebase/config'
 
 // Define user types for the dashboard
 export type UserType = "submitter" | "verifier" | "funder" | "admin"
@@ -108,18 +107,40 @@ export function UserProvider({
 
   // Listen for Firebase auth state changes
   useEffect(() => {
+    // Check if auth is initialized before setting up listener
+    if (!auth) {
+      console.warn('Firebase Auth is not initialized. Using mock user data instead.');
+      setIsLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(
-      authService.auth,
+      auth as Auth,
       async (user) => {
         try {
-          setIsLoading(true)
+          setIsLoading(true);
           
           if (user) {
+            // Check if Firestore is initialized
+            if (!db) {
+              console.warn('Firestore is not initialized. Using minimal user data from Auth.');
+              setFirebaseUser({
+                id: user.uid,
+                name: user.displayName || '',
+                email: user.email || '',
+                role: 'user',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              } as User);
+              setIsLoading(false);
+              return;
+            }
+
             // Get user data from Firestore
-            const userDoc = await getDoc(doc(db as Firestore, 'users', user.uid))
+            const userDoc = await getDoc(doc(db as Firestore, 'users', user.uid));
             
             if (userDoc.exists()) {
-              const userData = userDoc.data()
+              const userData = userDoc.data();
               const firebaseUserData: User = {
                 id: user.uid,
                 name: userData.displayName || user.displayName || '',
@@ -132,16 +153,16 @@ export function UserProvider({
                 updatedAt: userData.updatedAt?.toDate?.() 
                   ? new Date(userData.updatedAt.toDate()).toISOString() 
                   : new Date().toISOString(),
-              }
+              };
               
-              setFirebaseUser(firebaseUserData)
+              setFirebaseUser(firebaseUserData);
               
               // Update userType based on Firebase user role
               if (userData.role === 'submitter' || 
                   userData.role === 'verifier' || 
                   userData.role === 'funder' || 
                   userData.role === 'admin') {
-                setUserType(userData.role as UserType)
+                setUserType(userData.role as UserType);
               }
             } else {
               // If user document doesn't exist but auth does, create minimal user object
@@ -152,23 +173,31 @@ export function UserProvider({
                 role: 'user',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-              })
+              } as User);
             }
           } else {
-            setFirebaseUser(null)
+            // No user is signed in
+            setFirebaseUser(null);
           }
-        } catch (err) {
-          console.error('Error in auth state change:', err)
-          setAuthError(err instanceof Error ? err : new Error('Unknown error'))
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+          setAuthError(error as Error);
+          // Fall back to mock user data on error
+          setFirebaseUser(null);
         } finally {
-          setIsLoading(false)
+          setIsLoading(false);
         }
+      },
+      (error) => {
+        console.error('Auth state change error:', error);
+        setAuthError(error as Error);
+        setIsLoading(false);
       }
-    )
-
-    // Cleanup subscription
-    return () => unsubscribe()
-  }, [])
+    );
+    
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   // Determine which user to use - Firebase user if available, otherwise mock user
   const user = firebaseUser || mockUser

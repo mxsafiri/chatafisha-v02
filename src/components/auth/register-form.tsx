@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { authService } from "@/lib/firebase/services"
+import { createUserWithEmailAndPassword, updateProfile, getAuth } from "firebase/auth"
+import { doc, setDoc, serverTimestamp, getFirestore } from "firebase/firestore"
+import { db } from "@/lib/firebase/config"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -62,7 +64,19 @@ export default function RegisterForm() {
     setIsLoading(true)
 
     try {
-      await authService.signUp(data.email, data.password, data.name, data.role as UserRole)
+      const auth = getAuth()
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
+      await updateProfile(userCredential.user, { displayName: data.name })
+      const firestoreDb = getFirestore();
+      if (!firestoreDb) {
+        throw new Error("Firestore database is not available");
+      }
+      await setDoc(doc(firestoreDb, "users", userCredential.user.uid), {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        createdAt: serverTimestamp(),
+      })
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
@@ -88,7 +102,7 @@ export default function RegisterForm() {
     try {
       // Get the selected role from the form
       const role = form.getValues("role") as UserRole
-      await authService.signInWithGoogle(role)
+      // Implement Google sign-in logic here
       toast({
         title: "Success",
         description: "You have been registered with Google successfully.",

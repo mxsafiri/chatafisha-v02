@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { toast } from "@/components/ui/use-toast"
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getAuth } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase/config"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Form,
   FormControl,
@@ -15,13 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { authService } from "@/lib/firebase/services"
-import { Loader2 } from "lucide-react"
 import Icons from "@/components/ui/icons"
+import { toast } from "@/components/ui/use-toast"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Loader2 } from "lucide-react"
 
 // Define the form schema with Zod for validation
 const loginSchema = z.object({
@@ -50,7 +52,8 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      await authService.signIn(data.email, data.password)
+      const auth = getAuth()
+      await signInWithEmailAndPassword(auth, data.email, data.password)
       toast({
         title: "Success",
         description: "You have been logged in successfully.",
@@ -74,7 +77,9 @@ export default function LoginForm() {
     setIsGoogleLoading(true)
 
     try {
-      await authService.signInWithGoogle()
+      const auth = getAuth()
+      const provider = new GoogleAuthProvider()
+      await signInWithPopup(auth, provider)
       toast({
         title: "Success",
         description: "You have been logged in with Google successfully.",
