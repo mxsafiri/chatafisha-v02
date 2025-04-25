@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signUp, signInWithGoogle } from "@/lib/firebase/services/auth"
+import { authService } from "@/lib/firebase/services"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import Icons from "@/components/ui/icons" // Fixing the import of Icons component
+import Icons from "@/components/ui/icons"
 import { toast } from "@/components/ui/use-toast"
 import type { UserRole } from "@/types"
 
@@ -62,7 +62,7 @@ export default function RegisterForm() {
     setIsLoading(true)
 
     try {
-      await signUp(data.email, data.password, data.name, data.role as UserRole)
+      await authService.signUp(data.email, data.password, data.name, data.role as UserRole)
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
@@ -88,7 +88,7 @@ export default function RegisterForm() {
     try {
       // Get the selected role from the form
       const role = form.getValues("role") as UserRole
-      await signInWithGoogle(role)
+      await authService.signInWithGoogle(role)
       toast({
         title: "Success",
         description: "You have been registered with Google successfully.",

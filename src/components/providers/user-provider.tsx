@@ -7,8 +7,9 @@ import { mockVerifier } from "@/lib/data/mock-verifier"
 import type { User, UserRole } from "@/types"
 import type { Verifier } from "@/types/verification"
 import { onAuthStateChanged } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
-import { auth, db } from '@/lib/firebase/config'
+import { doc, getDoc, Firestore } from 'firebase/firestore'
+import { authService } from '@/lib/firebase/services'
+import { db } from '@/lib/firebase/config'
 
 // Define user types for the dashboard
 export type UserType = "submitter" | "verifier" | "funder" | "admin"
@@ -108,14 +109,14 @@ export function UserProvider({
   // Listen for Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(
-      auth,
+      authService.auth,
       async (user) => {
         try {
           setIsLoading(true)
           
           if (user) {
             // Get user data from Firestore
-            const userDoc = await getDoc(doc(db, 'users', user.uid))
+            const userDoc = await getDoc(doc(db as Firestore, 'users', user.uid))
             
             if (userDoc.exists()) {
               const userData = userDoc.data()

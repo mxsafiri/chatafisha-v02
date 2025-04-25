@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { resetPassword } from "@/lib/firebase/services/auth"
+import { authService } from "@/lib/firebase/services"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -43,7 +43,7 @@ export default function ResetPasswordForm() {
     setIsLoading(true)
 
     try {
-      await resetPassword(data.email)
+      await authService.resetPassword(data.email)
       toast({
         title: "Password reset email sent",
         description: "Check your email for a link to reset your password.",

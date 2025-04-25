@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { signIn, signInWithGoogle } from "@/lib/firebase/services/auth"
+import { authService } from "@/lib/firebase/services"
 import { Loader2 } from "lucide-react"
 import Icons from "@/components/ui/icons"
 import { Card } from "@/components/ui/card"
@@ -50,7 +50,7 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      await signIn(data.email, data.password)
+      await authService.signIn(data.email, data.password)
       toast({
         title: "Success",
         description: "You have been logged in successfully.",
@@ -74,7 +74,7 @@ export default function LoginForm() {
     setIsGoogleLoading(true)
 
     try {
-      await signInWithGoogle()
+      await authService.signInWithGoogle()
       toast({
         title: "Success",
         description: "You have been logged in with Google successfully.",
