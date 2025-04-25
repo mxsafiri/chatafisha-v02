@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { resetPassword } from "@/lib/firebase/services/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Icons } from "@/components/ui/icons"
+import Icons from "@/components/ui/icons"
 import { toast } from "@/components/ui/use-toast"
 
 // Define the form schema with Zod for validation
@@ -26,7 +26,7 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
 
-export function ResetPasswordForm() {
+export default function ResetPasswordForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 

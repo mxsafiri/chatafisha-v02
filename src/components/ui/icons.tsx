@@ -28,7 +28,7 @@ import {
 
 export type Icon = LucideIcon
 
-export const Icons = {
+const Icons = {
   logo: Command,
   close: X,
   spinner: Loader2,

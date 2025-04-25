@@ -41,7 +41,7 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>
 
-export function RegisterForm() {
+export default function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false)
