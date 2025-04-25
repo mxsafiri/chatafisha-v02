@@ -2,14 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn, signInWithGoogle } from "@/lib/firebase/services/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { z } from "zod"
+import { toast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
 import {
   Form,
   FormControl,
@@ -18,8 +15,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Icons } from "@/components/ui/icons"
-import { toast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { signIn, signInWithGoogle } from "@/lib/firebase/services/auth"
+import { Loader2 } from "lucide-react"
+import Icons from "@/components/ui/icons"
+import { Card } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
 
 // Define the form schema with Zod for validation
 const loginSchema = z.object({

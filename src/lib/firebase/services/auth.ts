@@ -33,7 +33,7 @@ const isFirebaseInitialized = () => {
 // Helper function to get a typed Firebase Auth instance
 const getAuth = (): Auth => {
   if (!auth) {
-    throw new Error('Firebase Auth is not initialized');
+    throw new Error('Firebase Auth is not initialized. This could be due to missing environment variables.');
   }
   return auth;
 };
@@ -41,7 +41,7 @@ const getAuth = (): Auth => {
 // Helper function to get a typed Firestore instance
 const getDb = (): Firestore => {
   if (!db) {
-    throw new Error('Firestore is not initialized');
+    throw new Error('Firestore is not initialized. This could be due to missing environment variables.');
   }
   return db;
 };
@@ -61,7 +61,7 @@ export const signUp = async (
   role: UserRole = 'submitter'
 ): Promise<User> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {
@@ -109,7 +109,7 @@ export const signUp = async (
  */
 export const signIn = async (email: string, password: string): Promise<User> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {
@@ -155,7 +155,7 @@ export const signIn = async (email: string, password: string): Promise<User> => 
  */
 export const signInWithGoogle = async (role: UserRole = 'submitter'): Promise<User> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {
@@ -224,7 +224,7 @@ export const signInWithGoogle = async (role: UserRole = 'submitter'): Promise<Us
  */
 export const signOut = async (): Promise<void> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {
@@ -241,7 +241,7 @@ export const signOut = async (): Promise<void> => {
  */
 export const resetPassword = async (email: string): Promise<void> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {
@@ -321,7 +321,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
  */
 export const updateUserRole = async (userId: string, role: UserRole): Promise<void> => {
   if (!isFirebaseInitialized()) {
-    throw new Error('Firebase is not initialized');
+    throw new Error('Firebase is not initialized. Please check your environment variables and reload the page.');
   }
 
   try {

@@ -7,12 +7,6 @@ import { getFunctions, Functions } from 'firebase/functions';
 // Check if we're running on the client side and not during build
 const isBrowser = typeof window !== 'undefined';
 
-// Check if Firebase environment variables are defined
-const hasValidConfig = 
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN &&
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
 // Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,6 +18,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+// Check if Firebase environment variables are defined
+const hasValidConfig = () => {
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 
+      !process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 
+      !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+    console.warn('Firebase configuration is missing or incomplete');
+    return false;
+  }
+  return true;
+};
+
 // Initialize Firebase conditionally
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
@@ -31,21 +36,32 @@ let db: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
 let functions: Functions | undefined;
 
-// Only initialize Firebase if we're in the browser and have valid config
-if (isBrowser && hasValidConfig) {
+// Only initialize Firebase if we're in the browser
+if (isBrowser) {
   try {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-    functions = getFunctions(app);
+    if (hasValidConfig()) {
+      // Check if Firebase is already initialized
+      if (!getApps().length) {
+        app = initializeApp(firebaseConfig);
+      } else {
+        app = getApp();
+      }
+      
+      // Initialize Firebase services
+      auth = getAuth(app);
+      db = getFirestore(app);
+      storage = getStorage(app);
+      functions = getFunctions(app);
+      
+      console.log('Firebase initialized successfully');
+    } else {
+      console.warn('Firebase not initialized due to missing configuration');
+    }
   } catch (error) {
     console.error('Firebase initialization error:', error);
   }
 } else {
-  console.warn(
-    'Firebase is not initialized. Either running on server during build time or missing configuration.'
-  );
+  console.warn('Firebase not initialized - running on server');
 }
 
 export { app, auth, db, storage, functions };
