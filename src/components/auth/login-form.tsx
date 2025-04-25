@@ -33,7 +33,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
-export default function LoginForm() {
+const LoginForm = () => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false)
@@ -198,3 +198,5 @@ export default function LoginForm() {
     </div>
   )
 }
+
+export default LoginForm

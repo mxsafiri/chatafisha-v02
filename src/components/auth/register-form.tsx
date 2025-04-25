@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signUp, signInWithGoogle } from "@/lib/firebase/services/auth"
+import { createUserWithEmailAndPassword, updateProfile, getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { doc, setDoc, serverTimestamp, getFirestore } from "firebase/firestore"
+import { db } from "@/lib/firebase/config"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -23,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Icons } from "@/components/ui/icons"
+import Icons from "@/components/ui/icons"
 import { toast } from "@/components/ui/use-toast"
 import type { UserRole } from "@/types"
 
@@ -41,7 +43,7 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>
 
-export function RegisterForm() {
+export default function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false)
@@ -62,12 +64,56 @@ export function RegisterForm() {
     setIsLoading(true)
 
     try {
-      await signUp(data.email, data.password, data.name, data.role as UserRole)
+      const auth = getAuth()
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
+      await updateProfile(userCredential.user, { displayName: data.name })
+      const firestoreDb = getFirestore();
+      if (!firestoreDb) {
+        throw new Error("Firestore database is not available");
+      }
+      
+      // Store comprehensive user data in Firestore with role
+      await setDoc(doc(firestoreDb, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        name: data.name,
+        displayName: data.name, // For consistency with Firebase Auth
+        email: data.email,
+        role: data.role,
+        isVerifier: data.role === "verifier",
+        isSubmitter: data.role === "submitter", 
+        isFunder: data.role === "funder",
+        isAdmin: data.role === "admin",
+        photoURL: userCredential.user.photoURL,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+      
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
       })
-      router.push("/dashboard")
+      
+      // Wait a moment for Firestore to update
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Redirect based on user role
+      switch (data.role) {
+        case "verifier":
+          router.push("/verify");
+          break;
+        case "funder":
+          router.push("/fund");
+          break;
+        case "submitter":
+          router.push("/submit-project");
+          break;
+        case "admin":
+          router.push("/admin");
+          break;
+        default:
+          router.push("/dashboard");
+      }
+      
       router.refresh()
     } catch (error) {
       console.error("Registration error:", error)
@@ -82,24 +128,71 @@ export function RegisterForm() {
   }
 
   // Handle Google sign-in
-  async function handleGoogleSignIn() {
+  async function onGoogleSignIn() {
     setIsGoogleLoading(true)
 
     try {
       // Get the selected role from the form
       const role = form.getValues("role") as UserRole
-      await signInWithGoogle(role)
+      
+      // Implement Google sign-in with Firebase
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      const firestoreDb = getFirestore();
+      
+      if (!firestoreDb) {
+        throw new Error("Firestore database is not available");
+      }
+      
+      // Store user data in Firestore with the selected role
+      await setDoc(doc(firestoreDb, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        name: userCredential.user.displayName || "",
+        displayName: userCredential.user.displayName || "",
+        email: userCredential.user.email || "",
+        role: role,
+        isVerifier: role === "verifier",
+        isSubmitter: role === "submitter", 
+        isFunder: role === "funder",
+        isAdmin: role === "admin",
+        photoURL: userCredential.user.photoURL,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      
       toast({
         title: "Success",
         description: "You have been registered with Google successfully.",
       })
-      router.push("/dashboard")
+      
+      // Wait a moment for Firestore to update
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Redirect based on user role
+      switch (role) {
+        case "verifier":
+          router.push("/verify");
+          break;
+        case "funder":
+          router.push("/fund");
+          break;
+        case "submitter":
+          router.push("/submit-project");
+          break;
+        case "admin":
+          router.push("/admin");
+          break;
+        default:
+          router.push("/dashboard");
+      }
+      
       router.refresh()
     } catch (error) {
-      console.error("Google registration error:", error)
+      console.error("Google sign-in error:", error)
       toast({
         title: "Error",
-        description: "Failed to register with Google. Please try again.",
+        description: "There was an error signing in with Google. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -218,7 +311,7 @@ export function RegisterForm() {
         variant="outline"
         type="button"
         disabled={isLoading || isGoogleLoading}
-        onClick={handleGoogleSignIn}
+        onClick={onGoogleSignIn}
         className="w-full"
       >
         {isGoogleLoading ? (
