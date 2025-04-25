@@ -6,6 +6,9 @@ import { mockSubmitter } from "@/lib/data/mock-submitter"
 import { mockVerifier } from "@/lib/data/mock-verifier"
 import type { User, UserRole } from "@/types"
 import type { Verifier } from "@/types/verification"
+import { onAuthStateChanged } from 'firebase/auth'
+import { doc, getDoc } from 'firebase/firestore'
+import { auth, db } from '@/lib/firebase/config'
 
 // Define user types for the dashboard
 export type UserType = "submitter" | "verifier" | "funder" | "admin"
@@ -16,6 +19,12 @@ interface UserContextType {
   user: User
   role: UserRole
   isSubmitter: boolean
+  isVerifier: boolean
+  isFunder: boolean
+  isAdmin: boolean
+  isAuthenticated: boolean
+  isLoading: boolean
+  firebaseUser: User | null
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -50,65 +59,143 @@ export function UserProvider({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('chatafisha-user-type', userType)
-      console.log('User type set to:', userType)
     }
   }, [userType])
-  
-  // Get the appropriate user based on the userType
-  let user: User
-  let role: UserRole
-  
-  switch(userType) {
-    case "submitter":
-      user = mockSubmitter
-      role = "user"
-      break
-    case "verifier":
-      // Convert Verifier type to User type with required properties
-      const verifierUser: User = {
-        ...mockVerifier,
-        createdAt: mockVerifier.joinedAt,
-        updatedAt: mockVerifier.joinedAt,
-        role: "verifier"
-      }
-      user = verifierUser
-      role = "verifier"
-      break
-    case "admin":
-      user = {
-        ...mockUsers[0],
-        role: "admin" as UserRole
-      }
-      role = "admin"
-      break
-    case "funder":
-    default:
-      user = {
-        ...mockUsers[1],
-        role: "user" as UserRole
-      }
-      role = "user"
-      break
+
+  // Mock user data based on selected user type
+  const getMockUser = (): User => {
+    switch (userType) {
+      case "submitter":
+        return mockSubmitter
+      case "verifier":
+        // Convert Verifier type to User type
+        return {
+          id: mockVerifier.id,
+          name: mockVerifier.name,
+          email: mockVerifier.email,
+          avatar: mockVerifier.avatar,
+          role: "verifier" as UserRole,
+          createdAt: mockVerifier.joinedAt,
+          updatedAt: mockVerifier.joinedAt
+        } as User
+      case "funder":
+        return {
+          ...mockUsers[2],
+          role: "funder" as UserRole
+        } as User
+      case "admin":
+        return {
+          ...mockUsers[3],
+          role: "admin" as UserRole
+        } as User
+      default:
+        return mockSubmitter
+    }
   }
-  
-  // Determine if user is a project submitter
-  const isSubmitter = userType === "submitter"
-  
-  const value = {
-    userType,
-    setUserType,
-    user,
-    role,
-    isSubmitter
-  }
-  
-  // Debug output
+
+  const [mockUser, setMockUser] = useState<User>(getMockUser())
+
+  // Update mock user when userType changes
   useEffect(() => {
-    console.log('UserProvider initialized with:', { userType, role, isSubmitter })
-  }, [userType, role, isSubmitter])
-  
+    setMockUser(getMockUser())
+  }, [userType])
+
+  // Firebase authentication state
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [authError, setAuthError] = useState<Error | null>(null)
+
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        try {
+          setIsLoading(true)
+          
+          if (user) {
+            // Get user data from Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid))
+            
+            if (userDoc.exists()) {
+              const userData = userDoc.data()
+              const firebaseUserData: User = {
+                id: user.uid,
+                name: userData.displayName || user.displayName || '',
+                email: userData.email || user.email || '',
+                role: userData.role || 'user',
+                avatar: userData.avatar || user.photoURL || undefined,
+                createdAt: userData.createdAt?.toDate?.() 
+                  ? new Date(userData.createdAt.toDate()).toISOString() 
+                  : new Date().toISOString(),
+                updatedAt: userData.updatedAt?.toDate?.() 
+                  ? new Date(userData.updatedAt.toDate()).toISOString() 
+                  : new Date().toISOString(),
+              }
+              
+              setFirebaseUser(firebaseUserData)
+              
+              // Update userType based on Firebase user role
+              if (userData.role === 'submitter' || 
+                  userData.role === 'verifier' || 
+                  userData.role === 'funder' || 
+                  userData.role === 'admin') {
+                setUserType(userData.role as UserType)
+              }
+            } else {
+              // If user document doesn't exist but auth does, create minimal user object
+              setFirebaseUser({
+                id: user.uid,
+                name: user.displayName || '',
+                email: user.email || '',
+                role: 'user',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              })
+            }
+          } else {
+            setFirebaseUser(null)
+          }
+        } catch (err) {
+          console.error('Error in auth state change:', err)
+          setAuthError(err instanceof Error ? err : new Error('Unknown error'))
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    )
+
+    // Cleanup subscription
+    return () => unsubscribe()
+  }, [])
+
+  // Determine which user to use - Firebase user if available, otherwise mock user
+  const user = firebaseUser || mockUser
+  const role = user.role as UserRole
+
+  // Role checks
+  const isSubmitter = role === 'submitter' as UserRole
+  const isVerifier = role === 'verifier' as UserRole
+  const isFunder = role === 'funder' as UserRole
+  const isAdmin = role === 'admin' as UserRole
+  const isAuthenticated = !!firebaseUser
+
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider
+      value={{
+        userType,
+        setUserType,
+        user,
+        role,
+        isSubmitter,
+        isVerifier,
+        isFunder,
+        isAdmin,
+        isAuthenticated,
+        isLoading,
+        firebaseUser
+      }}
+    >
       {children}
     </UserContext.Provider>
   )

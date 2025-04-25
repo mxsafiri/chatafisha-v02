@@ -1,6 +1,6 @@
 import type { ImpactProject, ImpactMetric, ProjectSubmission } from "./project"
 
-export type UserRole = 'user' | 'admin' | 'verifier';
+export type UserRole = 'user' | 'admin' | 'verifier' | 'submitter' | 'funder';
 
 export interface UserMetrics {
   projectsVerified: number;

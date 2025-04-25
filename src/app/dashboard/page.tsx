@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SiteHeader } from "@/components/layouts/site-header"
@@ -9,14 +8,19 @@ import { VerifierDashboard } from "@/components/profiles/verifier/verifier-dashb
 import { FunderDashboard } from "@/components/profiles/funder/funder-dashboard"
 import { AdminDashboard } from "@/components/profiles/admin/admin-dashboard"
 import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, LogOut } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { ErrorBoundary } from "react-error-boundary"
+import { useUser, UserType } from "@/components/providers/user-provider"
+import { signOut } from "@/lib/firebase/services/auth"
+import { useRouter } from "next/navigation"
+import { toast } from "@/components/ui/use-toast"
 
 function LoadingState() {
   return (
@@ -41,27 +45,24 @@ function ErrorFallback() {
   )
 }
 
-// Define user types for the dashboard
-type UserType = "submitter" | "verifier" | "funder" | "admin"
-
 const userProfiles = [
   {
-    value: "submitter",
+    value: "submitter" as UserType,
     label: "Project Owner",
     description: "Create and manage impact projects"
   },
   {
-    value: "verifier",
+    value: "verifier" as UserType,
     label: "Verifier",
     description: "Verify impact claims and project data"
   },
   {
-    value: "funder",
+    value: "funder" as UserType,
     label: "Funder",
     description: "Browse and fund impact projects"
   },
   {
-    value: "admin",
+    value: "admin" as UserType,
     label: "Admin",
     description: "Manage platform and users"
   },
@@ -84,11 +85,47 @@ function DashboardContent({ userType }: { userType: UserType }) {
 }
 
 export default function DashboardPage() {
-  // Use local state for profile selection
-  const [userType, setUserType] = useState<UserType>("submitter")
+  const { user, userType, setUserType, isAuthenticated, isLoading } = useUser()
+  const router = useRouter()
   
   // Get the current profile label
   const currentProfile = userProfiles.find(profile => profile.value === userType)
+  
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      })
+      router.push("/login")
+    } catch (error) {
+      console.error("Sign out error:", error)
+      toast({
+        title: "Error",
+        description: "There was an error signing out. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <div className="container flex-1 space-y-4 p-8 pt-6">
+          <LoadingState />
+        </div>
+      </div>
+    )
+  }
+  
+  if (!isAuthenticated) {
+    // This should be handled by middleware, but just in case
+    router.push("/login")
+    return null
+  }
   
   return (
     <div className="flex min-h-screen flex-col">
@@ -96,10 +133,15 @@ export default function DashboardPage() {
       <div className="container flex-1 space-y-4 p-8 pt-6">
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+              <p className="text-muted-foreground">
+                Welcome back, {user.name}
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="text-sm text-muted-foreground">
-                Testing Mode: Switch User Profile
+                {isAuthenticated ? "Your Role:" : "Testing Mode:"}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -112,7 +154,7 @@ export default function DashboardPage() {
                   {userProfiles.map((profile) => (
                     <DropdownMenuItem
                       key={profile.value}
-                      onClick={() => setUserType(profile.value as UserType)}
+                      onClick={() => setUserType(profile.value)}
                     >
                       <div className="flex flex-col">
                         <span>{profile.label}</span>
@@ -122,6 +164,11 @@ export default function DashboardPage() {
                       </div>
                     </DropdownMenuItem>
                   ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
