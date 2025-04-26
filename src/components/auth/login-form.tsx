@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getAuth } from "firebase/auth"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, getFirestore, setDoc, serverTimestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase/config"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,12 +53,44 @@ const LoginForm = () => {
 
     try {
       const auth = getAuth()
-      await signInWithEmailAndPassword(auth, data.email, data.password)
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password)
+      
+      // Get user role from Firestore
+      const firestoreDb = getFirestore()
+      const userDoc = await getDoc(doc(firestoreDb, "users", userCredential.user.uid))
+      
       toast({
         title: "Success",
         description: "You have been logged in successfully.",
       })
-      router.push("/dashboard")
+      
+      // Redirect based on user role
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        
+        // Redirect based on role
+        switch (userData.role) {
+          case "verifier":
+            router.push("/verify")
+            break
+          case "funder":
+            // Fallback to dashboard if fund page doesn't exist yet
+            router.push("/dashboard")
+            break
+          case "submitter":
+            router.push("/submit-project")
+            break
+          case "admin":
+            router.push("/dashboard")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      } else {
+        // Fallback to dashboard if user data doesn't exist
+        router.push("/dashboard")
+      }
+      
       router.refresh()
     } catch (error) {
       console.error("Login error:", error)
@@ -79,12 +111,65 @@ const LoginForm = () => {
     try {
       const auth = getAuth()
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-      toast({
-        title: "Success",
-        description: "You have been logged in with Google successfully.",
-      })
-      router.push("/dashboard")
+      const userCredential = await signInWithPopup(auth, provider)
+      
+      // Get user role from Firestore
+      const firestoreDb = getFirestore()
+      const userDoc = await getDoc(doc(firestoreDb, "users", userCredential.user.uid))
+      
+      // If user doesn't exist in Firestore yet, create a new document with default role
+      if (!userDoc.exists()) {
+        await setDoc(doc(firestoreDb, "users", userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          name: userCredential.user.displayName || "",
+          displayName: userCredential.user.displayName || "",
+          email: userCredential.user.email || "",
+          role: "submitter", // Default role
+          isVerifier: false,
+          isSubmitter: true,
+          isFunder: false,
+          isAdmin: false,
+          photoURL: userCredential.user.photoURL,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        
+        toast({
+          title: "Success",
+          description: "You have been logged in with Google successfully. Default role: Submitter",
+        })
+        
+        // New users are redirected to the submit-project page
+        router.push("/submit-project")
+      } else {
+        // Existing user - get their role and redirect accordingly
+        const userData = userDoc.data()
+        
+        toast({
+          title: "Success",
+          description: "You have been logged in with Google successfully.",
+        })
+        
+        // Redirect based on role
+        switch (userData.role) {
+          case "verifier":
+            router.push("/verify")
+            break
+          case "funder":
+            // Fallback to dashboard if fund page doesn't exist yet
+            router.push("/dashboard")
+            break
+          case "submitter":
+            router.push("/submit-project")
+            break
+          case "admin":
+            router.push("/dashboard")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      }
+      
       router.refresh()
     } catch (error) {
       console.error("Google login error:", error)
