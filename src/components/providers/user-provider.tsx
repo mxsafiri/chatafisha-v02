@@ -10,6 +10,9 @@ import { onAuthStateChanged, Auth, getIdTokenResult, User as FirebaseUser } from
 import { doc, getDoc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase/config'
 
+// DEMO MODE FLAG - Set to true to bypass authentication for demo purposes
+const DEMO_MODE = true;
+
 // Define user types for the dashboard
 export type UserType = "submitter" | "verifier" | "funder" | "admin"
 
@@ -107,6 +110,13 @@ export function UserProvider({
 
   // Listen for Firebase auth state changes
   useEffect(() => {
+    // If in DEMO_MODE, skip Firebase auth and use mock data
+    if (DEMO_MODE) {
+      console.log('DEMO MODE: Using mock user data for demo purposes');
+      setIsLoading(false);
+      return;
+    }
+    
     // Check if auth is initialized before setting up listener
     if (!auth) {
       console.warn('Firebase Auth is not initialized. Using mock user data instead.');
@@ -234,7 +244,8 @@ export function UserProvider({
   }, []);
 
   // Determine which user to use - Firebase user if available, otherwise mock user
-  const user = firebaseUser || mockUser
+  // In DEMO_MODE, always use mock user
+  const user = DEMO_MODE ? mockUser : (firebaseUser || mockUser);
   const role = user.role as UserRole
 
   // Role checks
@@ -242,7 +253,8 @@ export function UserProvider({
   const isVerifier = role === 'verifier' as UserRole
   const isFunder = role === 'funder' as UserRole
   const isAdmin = role === 'admin' as UserRole
-  const isAuthenticated = !!firebaseUser
+  // In DEMO_MODE, always consider the user authenticated
+  const isAuthenticated = DEMO_MODE ? true : !!firebaseUser
 
   return (
     <UserContext.Provider

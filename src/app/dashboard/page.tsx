@@ -121,11 +121,12 @@ export default function DashboardPage() {
     )
   }
   
-  if (!isAuthenticated) {
-    // This should be handled by middleware, but just in case
-    router.push("/login")
-    return null
-  }
+  // DEMO MODE: Remove authentication check for demo purposes
+  // if (!isAuthenticated) {
+  //   // This should be handled by middleware, but just in case
+  //   router.push("/login")
+  //   return null
+  // }
   
   return (
     <div className="flex min-h-screen flex-col">
@@ -141,7 +142,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="text-sm text-muted-foreground">
-                {isAuthenticated ? "Your Role:" : "Testing Mode:"}
+                {isAuthenticated ? "Your Role:" : "Demo Mode:"}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

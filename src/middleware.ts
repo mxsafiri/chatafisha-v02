@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// DEMO MODE FLAG - Set to true to bypass authentication for demo purposes
+const DEMO_MODE = true;
+
 // Define route access patterns
 const PUBLIC_ROUTES = [
   '/',
@@ -36,6 +39,11 @@ const PROFILE_ROUTES = [
 ];
 
 export function middleware(request: NextRequest) {
+  // If in demo mode, allow access to all routes
+  if (DEMO_MODE) {
+    return NextResponse.next();
+  }
+  
   const { pathname } = request.nextUrl;
   
   // Check if the path is public
