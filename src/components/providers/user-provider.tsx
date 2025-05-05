@@ -6,9 +6,7 @@ import { mockSubmitter } from "@/lib/data/mock-submitter"
 import { mockVerifier } from "@/lib/data/mock-verifier"
 import type { User, UserRole } from "@/types"
 import type { Verifier } from "@/types/verification"
-import { onAuthStateChanged, Auth, getIdTokenResult, User as FirebaseUser } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore'
-import { auth, db } from '@/lib/firebase/config'
+import { getUserData } from "@/actions/auth"
 
 // DEMO MODE FLAG - Set to true to bypass authentication for demo purposes
 const DEMO_MODE = true;
@@ -27,7 +25,6 @@ interface UserContextType {
   isAdmin: boolean
   isAuthenticated: boolean
   isLoading: boolean
-  firebaseUser: User | null
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -97,164 +94,67 @@ export function UserProvider({
   }
 
   const [mockUser, setMockUser] = useState<User>(getMockUser())
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(DEMO_MODE)
+  const [thirdwebUser, setThirdwebUser] = useState<User | null>(null)
 
   // Update mock user when userType changes
   useEffect(() => {
     setMockUser(getMockUser())
   }, [userType])
 
-  // Firebase authentication state
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [authError, setAuthError] = useState<Error | null>(null)
-
-  // Listen for Firebase auth state changes
+  // Attempt to get thirdweb user data when not in demo mode
   useEffect(() => {
-    // If in DEMO_MODE, skip Firebase auth and use mock data
-    if (DEMO_MODE) {
-      console.log('DEMO MODE: Using mock user data for demo purposes');
-      setIsLoading(false);
-      return;
-    }
-    
-    // Check if auth is initialized before setting up listener
-    if (!auth) {
-      console.warn('Firebase Auth is not initialized. Using mock user data instead.');
-      setIsLoading(false);
-      return;
-    }
-
-    const unsubscribe = onAuthStateChanged(
-      auth as Auth,
-      async (user) => {
+    const fetchThirdwebUser = async () => {
+      if (!DEMO_MODE) {
         try {
-          setIsLoading(true);
+          setIsLoading(true)
+          const userData = await getUserData()
           
-          if (user) {
-            // Check if Firestore is initialized
-            if (!db) {
-              console.warn('Firestore is not initialized. Using minimal user data from Auth.');
-              setFirebaseUser({
-                id: user.uid,
-                name: user.displayName || '',
-                email: user.email || '',
-                role: 'user',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              } as User);
-              setIsLoading(false);
-              return;
-            }
-
-            // Get user data from Firestore
-            const userDoc = await getDoc(doc(db as Firestore, 'users', user.uid));
+          if (userData) {
+            setThirdwebUser({
+              id: userData.id,
+              name: userData.address ? `${userData.address.slice(0, 6)}...${userData.address.slice(-4)}` : "Unknown User",
+              email: "",
+              role: userData.role as UserRole,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as User)
+            setIsAuthenticated(true)
             
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              
-              // Use role directly from Firestore
-              const userRole = userData.role || 'user';
-              
-              const firebaseUserData: User = {
-                id: user.uid,
-                name: userData.displayName || user.displayName || '',
-                email: userData.email || user.email || '',
-                role: userRole as UserRole,
-                avatar: userData.avatar || userData.photoURL || user.photoURL || undefined,
-                createdAt: userData.createdAt?.toDate?.() 
-                  ? new Date(userData.createdAt.toDate()).toISOString() 
-                  : new Date().toISOString(),
-                updatedAt: userData.updatedAt?.toDate?.() 
-                  ? new Date(userData.updatedAt.toDate()).toISOString() 
-                  : new Date().toISOString(),
-              };
-              
-              setFirebaseUser(firebaseUserData);
-              
-              // Update userType based on Firebase user role
-              if (userRole === 'submitter' || 
-                  userRole === 'verifier' || 
-                  userRole === 'funder' || 
-                  userRole === 'admin') {
-                setUserType(userRole as UserType);
-              }
-              
-              // Log user role for debugging
-              console.log(`User authenticated with role: ${userRole}`);
-            } else {
-              // If user document doesn't exist but auth does, create minimal user object
-              console.log("User authenticated but no Firestore document found. Creating basic profile.");
-              
-              const basicUserData = {
-                id: user.uid,
-                name: user.displayName || '',
-                email: user.email || '',
-                role: 'user' as UserRole,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              } as User;
-              
-              setFirebaseUser(basicUserData);
-              
-              // Create a new user document in Firestore
-              try {
-                await setDoc(doc(db as Firestore, 'users', user.uid), {
-                  uid: user.uid,
-                  displayName: user.displayName || '',
-                  name: user.displayName || '',
-                  email: user.email || '',
-                  role: 'user',
-                  isSubmitter: false,
-                  isVerifier: false,
-                  isFunder: false,
-                  isAdmin: false,
-                  photoURL: user.photoURL,
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                });
-                
-                console.log("Created basic user profile in Firestore");
-              } catch (error) {
-                console.error('Error creating user document:', error);
-              }
+            // Set userType based on role from thirdweb
+            if (userData.role) {
+              setUserType(userData.role as UserType)
             }
           } else {
-            // No user is signed in
-            console.log("No user is signed in");
-            setFirebaseUser(null);
+            setThirdwebUser(null)
+            setIsAuthenticated(false)
           }
         } catch (error) {
-          console.error('Error in auth state change:', error);
-          setAuthError(error as Error);
-          // Fall back to mock user data on error
-          setFirebaseUser(null);
+          console.error("Error fetching thirdweb user data:", error)
+          setThirdwebUser(null)
+          setIsAuthenticated(false)
         } finally {
-          setIsLoading(false);
+          setIsLoading(false)
         }
-      },
-      (error) => {
-        console.error('Auth state change error:', error);
-        setAuthError(error as Error);
-        setIsLoading(false);
+      } else {
+        // In demo mode, we're already authenticated with mock data
+        setIsLoading(false)
       }
-    );
+    }
     
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
+    fetchThirdwebUser()
+  }, [])
 
-  // Determine which user to use - Firebase user if available, otherwise mock user
-  // In DEMO_MODE, always use mock user
-  const user = DEMO_MODE ? mockUser : (firebaseUser || mockUser);
-  const role = user.role as UserRole
-
-  // Role checks
-  const isSubmitter = role === 'submitter' as UserRole
-  const isVerifier = role === 'verifier' as UserRole
-  const isFunder = role === 'funder' as UserRole
-  const isAdmin = role === 'admin' as UserRole
-  // In DEMO_MODE, always consider the user authenticated
-  const isAuthenticated = DEMO_MODE ? true : !!firebaseUser
+  // Determine which user object to use (thirdweb or mock)
+  const user = DEMO_MODE ? mockUser : (thirdwebUser || mockUser)
+  
+  // Compute role-based flags
+  const role = user.role
+  const isSubmitter = role === "submitter"
+  const isVerifier = role === "verifier"
+  const isFunder = role === "funder"
+  const isAdmin = role === "admin"
 
   return (
     <UserContext.Provider
@@ -269,7 +169,6 @@ export function UserProvider({
         isAdmin,
         isAuthenticated,
         isLoading,
-        firebaseUser
       }}
     >
       {children}

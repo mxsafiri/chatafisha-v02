@@ -3,7 +3,8 @@
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { UserProvider } from "@/components/providers/user-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { FirebaseErrorBoundary } from "@/components/error/firebase-error-boundary"
+import { ThirdwebProvider } from "thirdweb/react"
+import { client } from "@/lib/thirdweb/client"
 
 interface ProvidersProps {
   children: React.ReactNode
@@ -17,12 +18,12 @@ export function Providers({ children }: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      <FirebaseErrorBoundary>
+      <ThirdwebProvider client={client}>
         <UserProvider>
           {children}
           <Toaster />
         </UserProvider>
-      </FirebaseErrorBoundary>
+      </ThirdwebProvider>
     </ThemeProvider>
   )
 }

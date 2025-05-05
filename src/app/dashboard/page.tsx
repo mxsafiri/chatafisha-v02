@@ -3,10 +3,7 @@
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SiteHeader } from "@/components/layouts/site-header"
-import { SubmitterDashboard } from "@/components/profiles/submitter/submitter-dashboard"
-import { VerifierDashboard } from "@/components/profiles/verifier/verifier-dashboard"
-import { FunderDashboard } from "@/components/profiles/funder/funder-dashboard"
-import { AdminDashboard } from "@/components/profiles/admin/admin-dashboard"
+import { RoleDashboard } from "@/components/dashboard/role-dashboard"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, LogOut } from "lucide-react"
 import {
@@ -17,10 +14,12 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { ErrorBoundary } from "react-error-boundary"
-import { useUser, UserType } from "@/components/providers/user-provider"
-import { signOut } from "@/lib/firebase/services/auth"
 import { useRouter } from "next/navigation"
 import { toast } from "@/components/ui/use-toast"
+import { getUserData, logout } from "@/actions/auth"
+import { useEffect, useState } from "react"
+import type { UserRole } from "@/types"
+import { Badge } from "@/components/ui/badge"
 
 function LoadingState() {
   return (
@@ -45,66 +44,61 @@ function ErrorFallback() {
   )
 }
 
-const userProfiles = [
-  {
-    value: "submitter" as UserType,
-    label: "Project Owner",
-    description: "Create and manage impact projects"
-  },
-  {
-    value: "verifier" as UserType,
-    label: "Verifier",
-    description: "Verify impact claims and project data"
-  },
-  {
-    value: "funder" as UserType,
-    label: "Funder",
-    description: "Browse and fund impact projects"
-  },
-  {
-    value: "admin" as UserType,
-    label: "Admin",
-    description: "Manage platform and users"
-  },
-]
-
-// Dashboard components for each user type
-function DashboardContent({ userType }: { userType: UserType }) {
-  switch (userType) {
-    case "submitter":
-      return <SubmitterDashboard />
-    case "verifier":
-      return <VerifierDashboard />
-    case "admin":
-      return <AdminDashboard />
-    case "funder":
-      return <FunderDashboard />
-    default:
-      return <SubmitterDashboard />
-  }
-}
-
 export default function DashboardPage() {
-  const { user, userType, setUserType, isAuthenticated, isLoading } = useUser()
   const router = useRouter()
-  
-  // Get the current profile label
-  const currentProfile = userProfiles.find(profile => profile.value === userType)
+  const [user, setUser] = useState<{
+    id: string;
+    name?: string;
+    email?: string;
+    role: UserRole;
+    address?: string;
+  } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true)
+        const userData = await getUserData()
+        
+        if (userData) {
+          setUser({
+            id: userData.id,
+            address: userData.address,
+            role: userData.role as UserRole,
+            // Use address as name if no name is provided
+            name: userData.address.slice(0, 6) + '...' + userData.address.slice(-4),
+          })
+        } else {
+          setUser(null)
+          // Redirect to login if no user
+          router.push("/login")
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [router])
   
   // Handle sign out
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await logout()
       toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
+        title: "Logged out",
+        description: "You have been logged out successfully.",
       })
       router.push("/login")
     } catch (error) {
-      console.error("Sign out error:", error)
+      console.error("Logout error:", error)
       toast({
         title: "Error",
-        description: "There was an error signing out. Please try again.",
+        description: "There was an error logging out. Please try again.",
         variant: "destructive",
       })
     }
@@ -122,7 +116,7 @@ export default function DashboardPage() {
   }
   
   // DEMO MODE: Remove authentication check for demo purposes
-  // if (!isAuthenticated) {
+  // if (!user) {
   //   // This should be handled by middleware, but just in case
   //   router.push("/login")
   //   return null
@@ -136,52 +130,28 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-              <p className="text-muted-foreground">
-                Welcome back, {user.name}
-              </p>
+              {user && (
+                <p className="text-muted-foreground">
+                  Welcome back, {user.name}
+                </p>
+              )}
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="text-sm text-muted-foreground">
-                {isAuthenticated ? "Your Role:" : "Demo Mode:"}
+            {user && (
+              <div className="flex items-center gap-2">
+                <Badge variant={user.role === "user" ? "default" : (user.role as any)}>
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log Out</span>
+                </Button>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-[200px] justify-between">
-                    {currentProfile?.label || "Select profile"}
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  {userProfiles.map((profile) => (
-                    <DropdownMenuItem
-                      key={profile.value}
-                      onClick={() => setUserType(profile.value)}
-                    >
-                      <div className="flex flex-col">
-                        <span>{profile.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {profile.description}
-                        </span>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          
-          <div className="text-sm text-muted-foreground mb-4">
-            Current Profile: <span className="font-medium">{currentProfile?.label}</span>
+            )}
           </div>
           
           <ErrorBoundary FallbackComponent={ErrorFallback}>
             <Suspense fallback={<LoadingState />}>
-              <DashboardContent userType={userType} />
+              <RoleDashboard defaultTab="overview" />
             </Suspense>
           </ErrorBoundary>
         </div>

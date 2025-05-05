@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import LoginForm from "@/components/auth/login-form"
+import ThirdwebConnect from "@/components/auth/thirdweb/connect-embed"
 
 export const metadata: Metadata = {
   title: "Login | Chatafisha",
@@ -32,16 +32,20 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               Welcome back
             </h1>
             <p className="text-sm text-muted-foreground">
-              Enter your credentials to sign in to your account
+              Sign in with your wallet, email, or social account
             </p>
           </div>
-          <LoginForm />
+          <ThirdwebConnect 
+            title="Sign in to Chatafisha"
+            description="Connect your wallet or use your email to sign in"
+            redirectUrl="/dashboard"
+          />
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
             <a

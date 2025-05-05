@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import RegisterForm from "@/components/auth/register-form"
+import ThirdwebConnect from "@/components/auth/thirdweb/connect-embed"
 
 export const metadata: Metadata = {
   title: "Register | Chatafisha",
@@ -31,16 +31,20 @@ export default function RegisterPage() {
         </div>
       </div>
       <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               Create an account
             </h1>
             <p className="text-sm text-muted-foreground">
-              Select your role and enter your details to create your account
+              Sign up with your wallet, email, or social account
             </p>
           </div>
-          <RegisterForm />
+          <ThirdwebConnect 
+            title="Sign up for Chatafisha"
+            description="Connect your wallet or use your email to create an account"
+            redirectUrl="/submit-project"
+          />
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
             <a

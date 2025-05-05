@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +18,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { mockUsers } from "@/lib/data/mock"
 import { getNavItemsByRole } from "@/lib/navigation"
+import { toast } from "@/components/ui/use-toast"
+import { Badge } from "@/components/ui/badge"
 import type { UserRole } from "@/types"
 import { 
   User, 
@@ -27,22 +30,70 @@ import {
   CheckSquare, 
   BarChartHorizontal,
   PlusCircle,
-  Users
+  Users,
+  Loader2
 } from "lucide-react"
-
-// For demo purposes, we'll use the first community user
-// In a real app, this would come from an auth context
-const user = {
-  ...mockUsers[0],
-  role: "verifier" as UserRole // Explicitly type the role
-}
+import ThirdwebConnectButton from "@/components/auth/thirdweb/connect-button"
+import { getUserData, logout } from "@/actions/auth"
 
 export function UserNav() {
+  const router = useRouter()
+  const [user, setUser] = useState<{
+    id: string;
+    name?: string;
+    email?: string;
+    role: UserRole;
+    address?: string;
+    avatar?: string;
+  } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true)
+        const userData = await getUserData()
+        
+        if (userData) {
+          setUser({
+            id: userData.id,
+            address: userData.address,
+            role: userData.role as UserRole,
+            // Use address as name if no name is provided
+            name: userData.address.slice(0, 6) + '...' + userData.address.slice(-4),
+          })
+        } else {
+          setUser(null)
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [])
+  
+  // If loading or no user, show connect button
+  if (isLoading) {
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </Button>
+    )
+  }
+  
+  if (!user) {
+    return <ThirdwebConnectButton variant="outline" size="sm" />
+  }
+
   // Get navigation items based on user role
   const roleNavItems = getNavItemsByRole(user.role)
   
   // Determine if user is a project submitter
-  const isSubmitter = true // This would be determined by actual user data
+  const isSubmitter = user.role === "submitter" || user.role === "admin"
   
   // Helper function to render the appropriate icon based on role
   const getRoleIcon = () => {
@@ -51,8 +102,10 @@ export function UserNav() {
         return <CheckSquare className="mr-2 h-4 w-4" />
       case "admin":
         return <Users className="mr-2 h-4 w-4" />
-      case "user":
+      case "submitter":
         return <ClipboardList className="mr-2 h-4 w-4" />
+      case "funder":
+        return <BarChartHorizontal className="mr-2 h-4 w-4" />
       default:
         return <ClipboardList className="mr-2 h-4 w-4" />
     }
@@ -65,10 +118,48 @@ export function UserNav() {
         return "Verification Tools"
       case "admin":
         return "Admin Tools"
-      case "user":
-        return "My Tools"
+      case "submitter":
+        return "Submitter Tools"
+      case "funder":
+        return "Funding Tools"
       default:
         return "My Tools"
+    }
+  }
+
+  // Get role-specific avatar ring color
+  const getRoleRingColor = () => {
+    switch (user.role) {
+      case "verifier":
+        return "ring-blue-500"
+      case "admin":
+        return "ring-rose-500"
+      case "submitter":
+        return "ring-emerald-500"
+      case "funder":
+        return "ring-amber-500"
+      default:
+        return "ring-primary"
+    }
+  }
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      })
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Error logging out:", error)
+      toast({
+        title: "Error",
+        description: "There was an error logging out. Please try again.",
+        variant: "destructive",
+      })
     }
   }
   
@@ -76,23 +167,29 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+          <Avatar className={`h-8 w-8 ring-2 ${getRoleRingColor()} ring-offset-1 ring-offset-background`}>
+            <AvatarImage src={user.avatar} alt={user.name || user.address} />
+            <AvatarFallback>{user.name?.slice(0, 2) || user.address?.slice(0, 2) || "UN"}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-            <p className="text-xs leading-none text-primary mt-1">
-              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-              {isSubmitter && user.role !== "admin" && " • Project Submitter"}
-            </p>
+            <p className="text-sm font-medium leading-none">{user.name || user.address}</p>
+            {user.email && (
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            )}
+            <div className="flex items-center gap-1 mt-1">
+              <Badge variant={user.role === "user" ? "default" : (user.role as any)}>
+                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+              </Badge>
+              {user.role !== "admin" && isSubmitter && (
+                <Badge variant="submitter" className="text-[10px] px-1.5 py-0">Submitter</Badge>
+              )}
+            </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -143,7 +240,7 @@ export function UserNav() {
         )}
         
         {/* Project submission option */}
-        {(isSubmitter || user.role === "admin") && (
+        {isSubmitter && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
@@ -163,7 +260,7 @@ export function UserNav() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex items-center">
+        <DropdownMenuItem onClick={handleLogout} className="flex items-center">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

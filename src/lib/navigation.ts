@@ -6,6 +6,7 @@ export type NavItem = {
   roles?: UserRole[]
   description?: string
   isExternal?: boolean
+  icon?: string
 }
 
 // Main navigation items shown in the top navbar
@@ -43,6 +44,28 @@ export const roleNavItems: Record<UserRole, NavItem[]> = {
       description: "Manage projects you've funded",
     },
   ],
+  submitter: [
+    {
+      title: "Project Dashboard",
+      href: "/dashboard",
+      description: "Manage your projects and submissions",
+    },
+    {
+      title: "My Projects",
+      href: "/dashboard?tab=projects",
+      description: "View and manage your submitted projects",
+    },
+    {
+      title: "Submit New Project",
+      href: "/submit-project",
+      description: "Create a new impact project",
+    },
+    {
+      title: "Verification Status",
+      href: "/dashboard?tab=verification",
+      description: "Track verification status of your projects",
+    },
+  ],
   verifier: [
     {
       title: "Verification Dashboard",
@@ -63,6 +86,28 @@ export const roleNavItems: Record<UserRole, NavItem[]> = {
       title: "Impact Metrics",
       href: "/dashboard?tab=metrics",
       description: "Track your verification impact",
+    },
+  ],
+  funder: [
+    {
+      title: "Funding Dashboard",
+      href: "/dashboard",
+      description: "Manage your funding portfolio",
+    },
+    {
+      title: "Funding Opportunities",
+      href: "/fund",
+      description: "Discover projects to fund",
+    },
+    {
+      title: "My Investments",
+      href: "/dashboard?tab=investments",
+      description: "Track your funded projects",
+    },
+    {
+      title: "Impact Portfolio",
+      href: "/dashboard?tab=impact",
+      description: "View your funding impact",
     },
   ],
   admin: [
@@ -94,44 +139,87 @@ export const roleNavItems: Record<UserRole, NavItem[]> = {
   ],
 }
 
-// Additional navigation items for the submitter role
-export const submitterNavItems: NavItem[] = [
-  {
-    title: "Project Dashboard",
-    href: "/dashboard",
-    description: "Manage your projects and submissions",
-  },
-  {
-    title: "My Projects",
-    href: "/dashboard?tab=projects",
-    description: "View and manage your submitted projects",
-  },
-  {
-    title: "Submit New Project",
-    href: "/submit-project",
-    description: "Create a new impact project",
-  },
-  {
-    title: "Verification Status",
-    href: "/dashboard?tab=verification",
-    description: "Track verification status of your projects",
-  },
-]
-
 // Function to get navigation items based on user role
 export function getNavItemsByRole(role: UserRole): NavItem[] {
-  if (role === "user" && isProjectSubmitter()) {
-    // If the user is also a project submitter
-    return [...roleNavItems[role], ...submitterNavItems]
+  // Admin users have access to all navigation items
+  if (role === "admin") {
+    return roleNavItems.admin
   }
   
-  return roleNavItems[role] || []
+  return roleNavItems[role] || roleNavItems.user
 }
 
-// Helper function to determine if a user is a project submitter
-// This would be replaced with actual logic based on your user data
-function isProjectSubmitter(): boolean {
-  // For now, we'll return true for demo purposes
-  // In a real app, this would check if the user has submitted any projects
-  return true
+// Get the appropriate redirect path after login based on user role
+export function getRedirectPathByRole(role: UserRole): string {
+  switch (role) {
+    case "admin":
+      return "/admin"
+    case "verifier":
+      return "/verify"
+    case "funder":
+      return "/fund"
+    case "submitter":
+      return "/dashboard"
+    default:
+      return "/dashboard"
+  }
+}
+
+// Get protected routes that require specific roles
+export const protectedRoutes = {
+  admin: ["/admin", "/admin/:path*"],
+  verifier: ["/verify", "/verify/:path*"],
+  funder: ["/fund", "/fund/:path*"],
+  submitter: ["/submit-project", "/submit-project/:path*"],
+  authenticated: ["/dashboard", "/profile", "/profile/:path*"]
+}
+
+// Check if a route is protected and requires authentication
+export function isProtectedRoute(pathname: string): boolean {
+  const allProtectedPaths = [
+    ...protectedRoutes.admin,
+    ...protectedRoutes.verifier,
+    ...protectedRoutes.funder,
+    ...protectedRoutes.submitter,
+    ...protectedRoutes.authenticated
+  ]
+  
+  return allProtectedPaths.some(route => {
+    // Convert route pattern to regex
+    const pattern = route.replace(/\/:path\*/, "(/.*)?").replace(/\//g, "\\/")
+    const regex = new RegExp(`^${pattern}$`)
+    return regex.test(pathname)
+  })
+}
+
+// Check if a route requires a specific role
+export function requiresRole(pathname: string, role: UserRole): boolean {
+  // Admin can access all routes
+  if (role === "admin") return true
+  
+  // Check role-specific routes
+  const roleRoutes = protectedRoutes[role as keyof typeof protectedRoutes] || []
+  
+  return roleRoutes.some(route => {
+    // Convert route pattern to regex
+    const pattern = route.replace(/\/:path\*/, "(/.*)?").replace(/\//g, "\\/")
+    const regex = new RegExp(`^${pattern}$`)
+    return regex.test(pathname)
+  })
+}
+
+// Get role badge color
+export function getRoleBadgeColor(role: UserRole): string {
+  switch (role) {
+    case "admin":
+      return "rose"
+    case "verifier":
+      return "blue"
+    case "funder":
+      return "amber"
+    case "submitter":
+      return "emerald"
+    default:
+      return "default"
+  }
 }
