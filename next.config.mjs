@@ -14,14 +14,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Specify the asset prefix for static assets when deploying to Netlify
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : undefined,
   // Enable SWC minification
   swcMinify: true,
-  // Set the trailingSlash configuration to be consistent
-  trailingSlash: false,
-  // Use file system routing (needed for Netlify)
-  useFileSystemPublicRoutes: true,
+  // Generate a static export for Netlify
+  output: 'export',
 }
 
 export default nextConfig
