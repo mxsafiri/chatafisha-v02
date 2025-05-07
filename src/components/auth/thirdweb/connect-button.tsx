@@ -62,23 +62,7 @@ export default function ThirdwebConnectButton({
     }
   };
 
-  // Configure wallets to display in the ConnectButton component
-  const wallets = [
-    // Email/social login wallet
-    inAppWallet({
-      auth: {
-        options: ["email", "google", "apple", "facebook"],
-      },
-    }),
-    // Popular crypto wallets
-    createWallet("io.metamask", { recommended: true }),
-    createWallet("com.coinbase.wallet"),
-    createWallet("com.walletconnect"),
-    // Add more wallets as needed
-    createWallet("me.rainbow"),
-    createWallet("me.zerion"),
-    createWallet("me.trustwallet"),
-  ];
+  // Wallet configuration is now handled by thirdweb automatically
 
   const handleSuccess = async () => {
     toast({
@@ -155,7 +139,6 @@ export default function ThirdwebConnectButton({
       {showRoleSelector && !showingRoleSelector && <RoleSelector />}
       
       <ConnectWallet
-        theme="dark"
         modalTitle="Connect to Chatafisha"
         modalTitleIconUrl="/images/logo.png"
         btnTitle="Connect"
@@ -189,6 +172,7 @@ export default function ThirdwebConnectButton({
             md: "0.375rem", // Match Tailwind's rounded-md
             lg: "0.5rem", // Match Tailwind's rounded-lg
           },
+          mode: "dark"
         }}
         // Render a custom button
         renderButton={({ 
