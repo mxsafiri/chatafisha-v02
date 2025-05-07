@@ -65,7 +65,7 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
                     Projects Verified
                   </p>
                   <p className="text-2xl font-bold">
-                    {user.metrics.projectsVerified}
+                    {user.metrics?.projectsVerified || 0}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -73,7 +73,7 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
                     People Impacted
                   </p>
                   <p className="text-2xl font-bold">
-                    {user.metrics.peopleImpacted}
+                    {user.metrics?.peopleImpacted || 0}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -81,7 +81,7 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
                     Waste Collected (kg)
                   </p>
                   <p className="text-2xl font-bold">
-                    {user.metrics.wasteCollected}
+                    {user.metrics?.wasteCollected || 0}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -89,7 +89,7 @@ export function ProfileOverview({ user }: ProfileOverviewProps) {
                     Trees Planted
                   </p>
                   <p className="text-2xl font-bold">
-                    {user.metrics.treesPlanted}
+                    {user.metrics?.treesPlanted || 0}
                   </p>
                 </div>
               </div>
