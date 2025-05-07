@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ConnectButton } from "thirdweb/react";
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { ConnectButton } from "@thirdweb-dev/react";
+import { createWallet, inAppWallet } from "@thirdweb-dev/wallets";
 import { client } from "@/lib/thirdweb/client";
 import { generatePayload, isLoggedIn, login, logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";

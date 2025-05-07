@@ -29,27 +29,13 @@ export const generatePayload = thirdwebAuth.generatePayload;
  * @param role The user role to assign (defaults to submitter)
  * @returns Whether the login was successful
  */
-export async function login(payload: VerifyLoginPayloadParams, role: UserRole = "submitter") {
-  const verifiedPayload = await thirdwebAuth.verifyPayload(payload);
-  
-  if (verifiedPayload.valid) {
-    // Generate JWT with user role and permissions in context
-    const jwt = await thirdwebAuth.generateJWT({
-      payload: verifiedPayload.payload,
-      context: {
-        role,
-        isVerifier: role === "verifier",
-        isSubmitter: role === "submitter", 
-        isFunder: role === "funder",
-        isAdmin: role === "admin",
-      },
-    });
-    
+export async function login({ token }: { token: string }, role: UserRole = "submitter") {
+  if (token) {
     // Set the JWT in a cookie
-    cookies().set("jwt", jwt, {
+    cookies().set("jwt", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });

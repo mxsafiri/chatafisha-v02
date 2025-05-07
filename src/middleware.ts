@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isProtectedRoute, getRedirectPathByRole } from "@/lib/navigation";
+import { isProtectedRoute, requiresRole } from "@/lib/navigation";
+import { cookies } from "next/headers";
+import { createAuth } from "thirdweb/auth";
+import { privateKeyToAccount } from "thirdweb/wallets";
+import { client } from "@/lib/thirdweb/client";
 
-// Set to true to bypass authentication checks during development
-const DEMO_MODE = true;
+const privateKey = process.env.AUTH_PRIVATE_KEY || "";
+const domain = process.env.NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN || "";
+const cleanDomain = domain.endsWith("/") ? domain.slice(0, -1) : domain;
+
+const thirdwebAuth = createAuth({
+  domain: cleanDomain,
+  adminAccount: privateKeyToAccount({ client, privateKey }),
+  client: client,
+});
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,14 +32,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // In demo mode, allow access to all routes
-  if (DEMO_MODE) {
-    console.log("DEMO MODE: Bypassing authentication for", pathname);
-    return NextResponse.next();
+  // Get JWT from cookies
+  const jwt = request.cookies.get("jwt");
+  if (!jwt?.value) {
+    // Redirect to login if no JWT
+    return NextResponse.redirect(new URL("/login", request.url));
   }
   
-  // For production, we would check authentication here
-  // But since we're in DEMO_MODE, we won't implement this yet
+  // Verify JWT and check role
+  const authResult = await thirdwebAuth.verifyJWT({ jwt: jwt.value });
+  if (!authResult.valid) {
+    // Clear invalid JWT and redirect to login
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.delete("jwt");
+    return response;
+  }
+  
+  // Extract role from JWT context
+  const jwtData = authResult.parsedJWT as any;
+  const role = jwtData.context?.role || "user";
+  
+  // Check if user has required role for this route
+  if (!requiresRole(pathname, role)) {
+    // Redirect to appropriate dashboard if user doesn't have required role
+    return NextResponse.redirect(new URL(`/dashboard`, request.url));
+  }
   
   return NextResponse.next();
 }

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useToast } from "@/hooks/use-toast"
 import type { ProjectSubmissionFormData } from "@/lib/validations/project"
 
-import { ProjectFormProvider, useProjectForm } from "./project-form-provider"
+import { ProjectFormProvider, useProjectFormContext } from "./project-form-provider"
 import { ProjectFormNav } from "./project-form-nav"
 import { BasicInfoStep } from "./steps/basic-info-step"
 import { ImpactMetricsStep } from "./steps/impact-metrics-step"
@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator"
 
 function ProjectSubmissionFormInner() {
   const { handleSubmit } = useFormContext<ProjectSubmissionFormData>()
-  const { step } = useProjectForm()
+  const { step } = useProjectFormContext()
   const { toast } = useToast()
 
   const onSubmit = async (data: ProjectSubmissionFormData) => {

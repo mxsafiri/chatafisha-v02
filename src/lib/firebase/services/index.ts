@@ -25,9 +25,9 @@ import {
 
 import {
   getVerifications,
-  getVerification,
+  getVerificationById,
   createVerification,
-  submitForVerification,
+  submitProjectForVerification,
   assignVerification,
   updateVerification,
   uploadVerificationEvidence
@@ -73,9 +73,9 @@ export const projectsService = {
 export const verificationService = {
   // Verification functions
   getVerifications,
-  getVerification,
+  getVerificationById,
   createVerification,
-  submitForVerification,
+  submitProjectForVerification,
   assignVerification,
   updateVerification,
   uploadVerificationEvidence,

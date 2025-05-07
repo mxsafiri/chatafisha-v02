@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ConnectEmbed } from "thirdweb/react";
-import { createWallet, inAppWallet, coinbaseWallet, metamaskWallet, walletConnect } from "thirdweb/wallets";
+import { ConnectEmbed } from "@thirdweb-dev/react";
+import { InAppWallet, CoinbaseWallet, MetaMaskWallet, WalletConnect } from "@thirdweb-dev/wallets";
 import { client } from "@/lib/thirdweb/client";
 import { generatePayload, isLoggedIn, login, logout } from "@/actions/auth";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,19 +29,15 @@ export default function ThirdwebConnect({
   // Configure wallets to display in the ConnectEmbed component
   const wallets = [
     // Email/social login wallet
-    inAppWallet({
+    new InAppWallet({
       auth: {
         options: ["email", "google", "apple", "facebook"],
       },
     }),
     // Popular crypto wallets
-    metamaskWallet(),
-    coinbaseWallet(),
-    walletConnect(),
-    // Add more wallets as needed
-    createWallet("io.rainbow"),
-    createWallet("com.zerion"),
-    createWallet("me.trustwallet"),
+    new MetaMaskWallet(),
+    new CoinbaseWallet(),
+    new WalletConnect(),
   ];
 
   const handleSuccess = async () => {
@@ -103,39 +99,41 @@ export default function ThirdwebConnect({
             wallets={wallets}
             modalTitle="Connect to Chatafisha"
             modalTitleIconUrl="/images/logo.png"
-            auth={{
-              isLoggedIn: async (address) => {
-                console.log("Checking if logged in:", { address });
-                return await isLoggedIn();
-              },
-              doLogin: async (params) => {
-                console.log("Logging in...");
-                const success = await login(params, selectedRole);
-                if (success) {
-                  await handleSuccess();
-                }
-              },
-              getLoginPayload: async ({ address }) =>
-                generatePayload({ address }),
-              doLogout: async () => {
-                console.log("Logging out...");
-                await logout();
-                router.push("/");
-                router.refresh();
-              },
+            onLogin={async (token: string) => {
+              console.log("Logging in with token:", token);
+              const success = await login({ token }, selectedRole);
+              if (success) {
+                await handleSuccess();
+              }
+            }}
+            onLogout={async () => {
+              console.log("Logging out...");
+              await logout();
+              router.push("/");
+              router.refresh();
             }}
             theme={{
-              colors: {
-                primary: "#10b981", // Emerald-500 from Tailwind
-                secondary: "#064e3b", // Emerald-900 from Tailwind
-                accent: "#34d399", // Emerald-400 from Tailwind
-                success: "#10b981", // Emerald-500 from Tailwind
-                error: "#ef4444", // Red-500 from Tailwind
-              },
-              borderRadius: {
-                md: "0.375rem", // Match Tailwind's rounded-md
-                lg: "0.5rem", // Match Tailwind's rounded-lg
-              },
+              modalBg: "#ffffff",
+              primaryText: "#000000",
+              secondaryText: "#064e3b",
+              accentText: "#34d399",
+              danger: "#ef4444",
+              success: "#10b981",
+              modalOverlayBg: "rgba(0, 0, 0, 0.5)",
+              accentButtonBg: "#34d399",
+              accentButtonText: "#ffffff",
+              primaryButtonBg: "#10b981",
+              primaryButtonText: "#ffffff",
+              secondaryButtonBg: "#f3f4f6",
+              secondaryButtonText: "#374151",
+              connectedButtonBg: "#f3f4f6",
+              connectedButtonText: "#374151",
+              borderColor: "#e5e7eb",
+              separatorLine: "#e5e7eb",
+              secondaryButtonHoverBg: "#e5e7eb",
+              modalBorder: "#e5e7eb",
+              walletSelectorButtonHoverBg: "#f3f4f6",
+              connectedButtonBgHover: "#e5e7eb"
             }}
           />
         </div>
