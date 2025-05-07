@@ -165,23 +165,17 @@ export default function ThirdwebConnectButton({
           loginOptional: false,
           onLogin: async (token) => {
             console.log("Logging in with token", { token });
-            await login(token);
-          },
-          doLogin: async (params) => {
-            console.log("Logging in...");
-            const success = await login(params, selectedRole);
+            const success = await login(token, selectedRole);
             if (success) {
               await handleSuccess();
             }
           },
-          getLoginPayload: async ({ address }) =>
-            generatePayload({ address }),
-          doLogout: async () => {
+          onLogout: async () => {
             console.log("Logging out...");
             await logout();
             router.push("/");
             router.refresh();
-          },
+          }
         }}
         theme={{
           colors: {
