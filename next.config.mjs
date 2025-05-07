@@ -12,8 +12,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Remove standalone output for Netlify compatibility
-  // output: 'standalone',
+  // Optimized for Netlify deployment
+  swcMinify: true,
 }
 
 export default nextConfig

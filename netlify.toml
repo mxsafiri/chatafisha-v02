@@ -1,7 +1,10 @@
 [build]
   command = "npm install --legacy-peer-deps && npm run build"
   publish = ".next"
-  ignore = "git diff --quiet HEAD^ HEAD ./"
+
+# Ensure Next.js SSG files are correctly served with appropriate headers
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NEXT_PUBLIC_APP_URL = "https://impact-verify.netlify.app"
