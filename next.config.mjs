@@ -16,8 +16,6 @@ const nextConfig = {
   },
   // Enable SWC minification
   swcMinify: true,
-  // Generate a static export for Netlify
-  output: 'export',
 }
 
 export default nextConfig

@@ -1,7 +1,7 @@
 [build]
   command = "npm install --legacy-peer-deps && npm run build"
-  publish = "out"
-
+  publish = ".next"
+  
 [build.environment]
   NEXT_PUBLIC_APP_URL = "https://impact-verify.netlify.app"
   NODE_VERSION = "18.17.0"
@@ -11,6 +11,10 @@
   NEXT_PUBLIC_ENABLE_ANALYTICS = "false"
   NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN = "https://impact-verify.netlify.app"
 
+# Required for Next.js server-side rendering on Netlify
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 # Security headers
 [[headers]]
   for = "/*"
@@ -19,14 +23,3 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Add proper MIME types for common static assets
-[[headers]]
-  for = "*.css"
-  [headers.values]
-    Content-Type = "text/css"
-
-[[headers]]
-  for = "*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
