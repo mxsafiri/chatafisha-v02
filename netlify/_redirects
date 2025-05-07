@@ -1,0 +1,10 @@
+# Netlify redirects file
+
+# Handle Next.js static assets
+/_next/static/*  /_next/static/:splat  200
+
+# Handle Next.js data fetching
+/_next/data/*  /_next/data/:splat  200
+
+# Default redirect for SPA
+/*  /index.html  200

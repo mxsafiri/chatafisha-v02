@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build && cp -r netlify/* .next/"
   publish = ".next"
   
 [build.environment]
@@ -15,6 +15,27 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Explicitly set MIME types for static assets
+[[headers]]
+  for = "/_next/static/css/*"
+  [headers.values]
+    Content-Type = "text/css"
+
+[[headers]]
+  for = "/_next/static/chunks/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/_next/static/chunks/*.css"
+  [headers.values]
+    Content-Type = "text/css"
+
+[[headers]]
+  for = "/_next/static/media/*"
+  [headers.values]
+    Content-Type = "image/*"
+    
 # Security headers
 [[headers]]
   for = "/*"
