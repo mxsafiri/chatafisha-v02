@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectWallet } from "@thirdweb-dev/react";
-import { SmartWallet, LocalWallet } from "@thirdweb-dev/wallets";
-import { client } from "@/lib/thirdweb/client";
-import { generatePayload, isLoggedIn, login, logout } from "@/actions/auth";
+import { login, logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -156,18 +154,18 @@ export default function ThirdwebConnectButton({
     <div className="flex items-center gap-2">
       {showRoleSelector && !showingRoleSelector && <RoleSelector />}
       
-      <ConnectButton
-        client={client}
-        wallets={wallets}
+      <ConnectWallet
+        theme="dark"
         modalTitle="Connect to Chatafisha"
         modalTitleIconUrl="/images/logo.png"
         btnTitle="Connect"
         onModalOpen={() => setShowingRoleSelector(true)}
         onModalClose={() => setShowingRoleSelector(false)}
         auth={{
-          isLoggedIn: async (address) => {
-            console.log("Checking if logged in:", { address });
-            return await isLoggedIn();
+          loginOptional: false,
+          onLogin: async (token) => {
+            console.log("Logging in with token", { token });
+            await login(token);
           },
           doLogin: async (params) => {
             console.log("Logging in...");
