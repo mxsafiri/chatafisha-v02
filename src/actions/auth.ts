@@ -1,6 +1,6 @@
 "use server";
 
-import { VerifyLoginPayloadParams, createAuth } from "thirdweb/auth";
+import { createAuth } from "thirdweb/auth";
 import { privateKeyToAccount } from "thirdweb/wallets";
 import { client } from "@/lib/thirdweb/client";
 import { cookies } from "next/headers";
@@ -8,11 +8,15 @@ import { UserRole } from "@/types";
 
 const privateKey = process.env.AUTH_PRIVATE_KEY || "";
 if (!privateKey) {
-  console.warn("Missing AUTH_PRIVATE_KEY in .env file. Authentication will not work properly.");
+  throw new Error("Missing AUTH_PRIVATE_KEY in .env file. Authentication will not work properly.");
+}
+
+const domain = process.env.NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN || "";
+if (!domain) {
+  throw new Error("Missing NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN in .env file. Authentication will not work properly.");
 }
 
 // Make sure the domain doesn't have trailing slashes
-const domain = process.env.NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN || "";
 const cleanDomain = domain.endsWith("/") ? domain.slice(0, -1) : domain;
 
 const thirdwebAuth = createAuth({
@@ -21,16 +25,24 @@ const thirdwebAuth = createAuth({
   client: client,
 });
 
-export const generatePayload = thirdwebAuth.generatePayload;
-
 /**
  * Authenticate a user with thirdweb
- * @param payload The verification payload from the wallet signature
+ * @param token The JWT token from thirdweb
  * @param role The user role to assign (defaults to submitter)
  * @returns Whether the login was successful
  */
-export async function login({ token }: { token: string }, role: UserRole = "submitter") {
-  if (token) {
+export async function login(token: string, role: UserRole = "submitter") {
+  if (!token) {
+    return false;
+  }
+
+  try {
+    // Verify the JWT
+    const authResult = await thirdwebAuth.verifyJWT({ jwt: token });
+    if (!authResult.valid) {
+      return false;
+    }
+
     // Set the JWT in a cookie
     cookies().set("jwt", token, {
       httpOnly: true,
@@ -41,9 +53,10 @@ export async function login({ token }: { token: string }, role: UserRole = "subm
     });
     
     return true;
+  } catch (error) {
+    console.error("Error verifying JWT:", error);
+    return false;
   }
-  
-  return false;
 }
 
 /**
