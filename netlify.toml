@@ -15,6 +15,22 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Handle Next.js static asset MIME types
+[[headers]]
+  for = "/_next/static/css/*"
+  [headers.values]
+    Content-Type = "text/css"
+
+[[headers]]
+  for = "/_next/static/js/*"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/_next/static/media/*"
+  [headers.values]
+    Content-Type = "image/*"
+
 # Security headers
 [[headers]]
   for = "/*"
