@@ -2,19 +2,18 @@
 
 import { createAuth } from "thirdweb/auth";
 import { privateKeyToAccount } from "thirdweb/wallets";
-import { client, hasThirdwebConfig } from "@/lib/thirdweb/client";
+import { client, hasThirdwebConfig, authDomain } from "@/lib/thirdweb/client";
 import { cookies } from "next/headers";
 import { UserRole } from "@/types";
 
 // Check for required environment variables
 const privateKey = process.env.AUTH_PRIVATE_KEY || "";
-const domain = process.env.NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN || "";
 
-// Check if all auth configs are available
-export const hasAuthConfig = hasThirdwebConfig && Boolean(privateKey && domain && client);
+// Check if all auth configs are available 
+export const hasAuthConfig = hasThirdwebConfig && Boolean(privateKey && authDomain && client);
 
 // Make sure the domain doesn't have trailing slashes
-const cleanDomain = domain.endsWith("/") ? domain.slice(0, -1) : domain;
+const cleanDomain = authDomain ? (authDomain.endsWith("/") ? authDomain.slice(0, -1) : authDomain) : "";
 
 // Only create auth if all required configs are present
 const thirdwebAuth = hasAuthConfig 
