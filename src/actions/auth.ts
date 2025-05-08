@@ -2,28 +2,28 @@
 
 import { createAuth } from "thirdweb/auth";
 import { privateKeyToAccount } from "thirdweb/wallets";
-import { client } from "@/lib/thirdweb/client";
+import { client, hasThirdwebConfig } from "@/lib/thirdweb/client";
 import { cookies } from "next/headers";
 import { UserRole } from "@/types";
 
+// Check for required environment variables
 const privateKey = process.env.AUTH_PRIVATE_KEY || "";
-if (!privateKey) {
-  throw new Error("Missing AUTH_PRIVATE_KEY in .env file. Authentication will not work properly.");
-}
-
 const domain = process.env.NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN || "";
-if (!domain) {
-  throw new Error("Missing NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN in .env file. Authentication will not work properly.");
-}
+
+// Check if all auth configs are available
+export const hasAuthConfig = hasThirdwebConfig && Boolean(privateKey && domain && client);
 
 // Make sure the domain doesn't have trailing slashes
 const cleanDomain = domain.endsWith("/") ? domain.slice(0, -1) : domain;
 
-const thirdwebAuth = createAuth({
-  domain: cleanDomain,
-  adminAccount: privateKeyToAccount({ client, privateKey }),
-  client: client,
-});
+// Only create auth if all required configs are present
+const thirdwebAuth = hasAuthConfig 
+  ? createAuth({
+      domain: cleanDomain,
+      adminAccount: privateKeyToAccount({ client: client!, privateKey }),
+      client: client!,
+    })
+  : null;
 
 /**
  * Authenticate a user with thirdweb
@@ -31,20 +31,21 @@ const thirdwebAuth = createAuth({
  * @param role The user role to assign (defaults to submitter)
  * @returns Whether the login was successful
  */
-export async function login(token: string, role: UserRole = "submitter") {
-  if (!token) {
+export async function login(params: { token: string }, role: UserRole = "submitter") {
+  if (!hasAuthConfig || !thirdwebAuth || !params?.token) {
+    console.warn("Authentication is not properly configured or token is missing");
     return false;
   }
 
   try {
     // Verify the JWT
-    const authResult = await thirdwebAuth.verifyJWT({ jwt: token });
+    const authResult = await thirdwebAuth.verifyJWT({ jwt: params.token });
     if (!authResult.valid) {
       return false;
     }
 
     // Set the JWT in a cookie
-    cookies().set("jwt", token, {
+    cookies().set("jwt", params.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -64,13 +65,22 @@ export async function login(token: string, role: UserRole = "submitter") {
  * @returns Whether the user is logged in
  */
 export async function isLoggedIn() {
+  if (!hasAuthConfig || !thirdwebAuth) {
+    return false;
+  }
+
   const jwt = cookies().get("jwt");
   if (!jwt?.value) {
     return false;
   }
   
-  const authResult = await thirdwebAuth.verifyJWT({ jwt: jwt.value });
-  return authResult.valid;
+  try {
+    const authResult = await thirdwebAuth.verifyJWT({ jwt: jwt.value });
+    return authResult.valid;
+  } catch (error) {
+    console.error("Error verifying JWT:", error);
+    return false;
+  }
 }
 
 /**
@@ -78,31 +88,40 @@ export async function isLoggedIn() {
  * @returns User data or null if not logged in
  */
 export async function getUserData() {
+  if (!hasAuthConfig || !thirdwebAuth) {
+    return null;
+  }
+
   const jwt = cookies().get("jwt");
   if (!jwt?.value) {
     return null;
   }
   
-  const authResult = await thirdwebAuth.verifyJWT({ jwt: jwt.value });
-  if (!authResult.valid) {
+  try {
+    const authResult = await thirdwebAuth.verifyJWT({ jwt: jwt.value });
+    if (!authResult.valid) {
+      return null;
+    }
+    
+    // Extract data from the parsed JWT
+    const { parsedJWT } = authResult;
+    // Access the JWT data directly from parsedJWT
+    const jwtData = parsedJWT as any; // Type assertion to avoid TypeScript errors
+    const context = jwtData.context || {};
+    
+    return {
+      id: jwtData.sub,
+      address: jwtData.address,
+      role: context.role || "submitter",
+      isVerifier: context.isVerifier || false,
+      isSubmitter: context.isSubmitter || true,
+      isFunder: context.isFunder || false,
+      isAdmin: context.isAdmin || false,
+    };
+  } catch (error) {
+    console.error("Error getting user data:", error);
     return null;
   }
-  
-  // Extract data from the parsed JWT
-  const { parsedJWT } = authResult;
-  // Access the JWT data directly from parsedJWT
-  const jwtData = parsedJWT as any; // Type assertion to avoid TypeScript errors
-  const context = jwtData.context || {};
-  
-  return {
-    id: jwtData.sub,
-    address: jwtData.address,
-    role: context.role || "submitter",
-    isVerifier: context.isVerifier || false,
-    isSubmitter: context.isSubmitter || true,
-    isFunder: context.isFunder || false,
-    isAdmin: context.isAdmin || false,
-  };
 }
 
 /**
