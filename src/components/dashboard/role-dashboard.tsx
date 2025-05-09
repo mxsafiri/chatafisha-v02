@@ -22,6 +22,12 @@ import {
   Loader2
 } from "lucide-react";
 
+// Import role-specific dashboard components
+import { AdminDashboard } from "@/components/profiles/admin/admin-dashboard";
+import { FunderDashboard } from "@/components/profiles/funder/funder-dashboard";
+import { SubmitterDashboard } from "@/components/profiles/submitter/submitter-dashboard";
+import { VerifierDashboard } from "@/components/profiles/verifier/verifier-dashboard";
+
 interface RoleDashboardProps {
   defaultTab?: string;
 }
@@ -95,38 +101,8 @@ export function RoleDashboard({ defaultTab = "overview" }: RoleDashboardProps) {
       </TabsList>
       
       <TabsContent value="overview" className="space-y-4 mt-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Stats cards - different for each role */}
-          {renderRoleStats(user.role)}
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>
-                {getRoleSpecificTitle(user.role)}
-              </CardTitle>
-              <CardDescription>
-                {getRoleSpecificDescription(user.role)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-              {renderRoleSpecificContent(user.role)}
-            </CardContent>
-          </Card>
-          
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>
-                Your latest actions and updates
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityFeed role={user.role} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Render the appropriate role-specific dashboard */}
+        {renderRoleDashboard(user.role)}
       </TabsContent>
       
       <TabsContent value="projects" className="mt-4">
@@ -220,236 +196,88 @@ function getRoleProjectsDescription(role: UserRole): string {
   }
 }
 
-// Placeholder components
-function renderRoleStats(role: UserRole) {
+// Function to render the appropriate role-specific dashboard
+function renderRoleDashboard(role: UserRole) {
   switch (role) {
-    case "verifier":
-      return (
-        <>
-          <StatCard 
-            title="Pending Verifications" 
-            value="12" 
-            description="Awaiting your review"
-            icon={<ClipboardList className="h-4 w-4 text-muted-foreground" />}
-            trend="+4 this week"
-          />
-          <StatCard 
-            title="Completed" 
-            value="48" 
-            description="Projects verified"
-            icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
-            trend="+7 this month"
-          />
-          <StatCard 
-            title="Accuracy Rate" 
-            value="97%" 
-            description="Verification accuracy"
-            icon={<PieChart className="h-4 w-4 text-muted-foreground" />}
-            trend="+2% improvement"
-          />
-          <StatCard 
-            title="Impact Score" 
-            value="89" 
-            description="Your verification impact"
-            icon={<Leaf className="h-4 w-4 text-muted-foreground" />}
-            trend="+5 points"
-          />
-        </>
-      );
     case "admin":
-      return (
-        <>
-          <StatCard 
-            title="Total Users" 
-            value="1,284" 
-            description="Platform users"
-            icon={<Users2 className="h-4 w-4 text-muted-foreground" />}
-            trend="+24 this week"
-          />
-          <StatCard 
-            title="Projects" 
-            value="342" 
-            description="Active projects"
-            icon={<FileText className="h-4 w-4 text-muted-foreground" />}
-            trend="+18 this month"
-          />
-          <StatCard 
-            title="Verifications" 
-            value="287" 
-            description="Completed verifications"
-            icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
-            trend="+32 this month"
-          />
-          <StatCard 
-            title="Total Funding" 
-            value="$1.2M" 
-            description="Funds distributed"
-            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-            trend="+$120K this month"
-          />
-        </>
-      );
+      return <AdminDashboard />;
+    case "verifier":
+      return <VerifierDashboard />;
     case "submitter":
-      return (
-        <>
-          <StatCard 
-            title="Your Projects" 
-            value="8" 
-            description="Total submissions"
-            icon={<ClipboardList className="h-4 w-4 text-muted-foreground" />}
-            trend="+2 this month"
-          />
-          <StatCard 
-            title="Verified" 
-            value="5" 
-            description="Approved projects"
-            icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
-            trend="+1 this week"
-          />
-          <StatCard 
-            title="Funding" 
-            value="$24K" 
-            description="Total received"
-            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-            trend="+$5K this month"
-          />
-          <StatCard 
-            title="Impact Score" 
-            value="76" 
-            description="Your project impact"
-            icon={<Leaf className="h-4 w-4 text-muted-foreground" />}
-            trend="+12 points"
-          />
-        </>
-      );
+      return <SubmitterDashboard />;
     case "funder":
-      return (
-        <>
-          <StatCard 
-            title="Funded Projects" 
-            value="15" 
-            description="Projects you support"
-            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-            trend="+3 this month"
-          />
-          <StatCard 
-            title="Total Invested" 
-            value="$86K" 
-            description="Your contributions"
-            icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
-            trend="+$12K this month"
-          />
-          <StatCard 
-            title="Impact Score" 
-            value="92" 
-            description="Your funding impact"
-            icon={<Leaf className="h-4 w-4 text-muted-foreground" />}
-            trend="+8 points"
-          />
-          <StatCard 
-            title="Available" 
-            value="$45K" 
-            description="Funds available"
-            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-            trend="Ready to deploy"
-          />
-        </>
-      );
+      return <FunderDashboard />;
     default:
       return (
-        <>
-          <StatCard 
-            title="Projects" 
-            value="0" 
-            description="Your projects"
-            icon={<FileText className="h-4 w-4 text-muted-foreground" />}
-            trend="Start creating!"
-          />
-          <StatCard 
-            title="Verified" 
-            value="0" 
-            description="Verified projects"
-            icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
-            trend="None yet"
-          />
-          <StatCard 
-            title="Funding" 
-            value="$0" 
-            description="Total received"
-            icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-            trend="Get started!"
-          />
-          <StatCard 
-            title="Impact" 
-            value="0" 
-            description="Your impact score"
-            icon={<Leaf className="h-4 w-4 text-muted-foreground" />}
-            trend="Create a project!"
-          />
-        </>
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Getting Started</CardTitle>
+            <CardDescription>Welcome to Chatafisha Impact Portal</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center">
+              <p className="text-muted-foreground">Complete your profile to get started</p>
+            </div>
+          </CardContent>
+        </Card>
       );
   }
-}
-
-function renderRoleSpecificContent(role: UserRole) {
-  // Placeholder for role-specific content
-  return (
-    <div className="text-center py-8">
-      <Badge variant={role === "user" ? "default" : (role as any)} className="mb-4">
-        {role.charAt(0).toUpperCase() + role.slice(1)} Dashboard
-      </Badge>
-      <p className="text-muted-foreground">
-        Role-specific content will be displayed here based on your permissions.
-      </p>
-      <Button className="mt-4" variant="outline">
-        {role === "verifier" && "View Verification Queue"}
-        {role === "admin" && "View Admin Panel"}
-        {role === "submitter" && "Create New Project"}
-        {role === "funder" && "Browse Funding Opportunities"}
-        {role === "user" && "Explore Projects"}
-      </Button>
-    </div>
-  );
 }
 
 // Placeholder components for tabs
 function ActivityFeed({ role }: { role: UserRole }) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground text-center py-4">
-        Activity feed will be displayed here.
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Recent Activity</CardTitle>
+        <CardDescription>Your latest interactions</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">Activity feed will appear here</p>
+      </CardContent>
+    </Card>
   );
 }
 
 function ProjectsList({ role }: { role: UserRole }) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground text-center py-4">
-        Projects list will be displayed here.
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Projects</CardTitle>
+        <CardDescription>Your projects and involvements</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">Project list will appear here</p>
+      </CardContent>
+    </Card>
   );
 }
 
 function ImpactMetrics({ role }: { role: UserRole }) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground text-center py-4">
-        Impact metrics will be displayed here.
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Impact Metrics</CardTitle>
+        <CardDescription>Your environmental and social impact</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">Impact metrics will appear here</p>
+      </CardContent>
+    </Card>
   );
 }
 
 function ActivityLog({ role }: { role: UserRole }) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground text-center py-4">
-        Activity log will be displayed here.
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Activity Log</CardTitle>
+        <CardDescription>Recent actions and events</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">Activity log will appear here</p>
+      </CardContent>
+    </Card>
   );
 }
 

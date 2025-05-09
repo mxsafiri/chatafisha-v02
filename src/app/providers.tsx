@@ -5,7 +5,6 @@ import { UserProvider } from "@/components/providers/user-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { ThirdwebProvider } from "@thirdweb-dev/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { client } from "@/lib/thirdweb/client"
 import { useState } from "react"
 
 interface ProvidersProps {
@@ -32,7 +31,7 @@ export function Providers({ children }: ProvidersProps) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <ThirdwebProvider client={client}>
+        <ThirdwebProvider clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}>
           <UserProvider>
             {children}
             <Toaster />
